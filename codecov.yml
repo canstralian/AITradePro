@@ -1,0 +1,25 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 5%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/test/**"
+  - "**/*.config.ts"
+  - "**/*.config.js"
+  - "dist/**"
+  - "build/**"
+  - "node_modules/**"
+
+comment:
+  layout: "header, diff, flags, files"
+  behavior: default
+  require_changes: false
