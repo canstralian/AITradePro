@@ -10,7 +10,7 @@ export default function OrderBook({ symbol }: OrderBookProps) {
     const basePrice = 43247.89;
     const bids = [];
     const asks = [];
-    
+
     // Generate bids (buy orders) - decreasing prices
     for (let i = 0; i < 8; i++) {
       bids.push({
@@ -18,7 +18,7 @@ export default function OrderBook({ symbol }: OrderBookProps) {
         quantity: (Math.random() * 2 + 0.1).toFixed(3),
       });
     }
-    
+
     // Generate asks (sell orders) - increasing prices
     for (let i = 0; i < 8; i++) {
       asks.push({
@@ -26,7 +26,7 @@ export default function OrderBook({ symbol }: OrderBookProps) {
         quantity: (Math.random() * 2 + 0.1).toFixed(3),
       });
     }
-    
+
     return { bids, asks };
   };
 

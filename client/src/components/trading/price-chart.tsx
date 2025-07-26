@@ -13,13 +13,13 @@ interface PriceChartProps {
 
 export default function PriceChart({ symbol, price, priceChange, marketData }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState('1D');
-  
+
   // Generate mock chart data
   const generateChartData = () => {
     const data = [];
     const basePrice = parseFloat(price.replace(/,/g, ''));
     const now = new Date();
-    
+
     for (let i = 23; i >= 0; i--) {
       const time = new Date(now.getTime() - i * 60 * 60 * 1000);
       const variation = (Math.random() - 0.5) * basePrice * 0.02;

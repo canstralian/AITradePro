@@ -13,6 +13,8 @@ import RAGAnalysis from './rag-analysis';
 import WorkerQueue from './worker-queue';
 import { DashboardData, MarketData, AIInsight } from '@/types/trading';
 
+import { useIsMobile } from '@/hooks/use-mobile';
+
 interface MainDashboardProps {
   dashboardData?: DashboardData;
   marketData: Record<string, MarketData>;
@@ -24,6 +26,7 @@ export default function MainDashboard({
   marketData, 
   realtimeInsights 
 }: MainDashboardProps) {
+  const isMobile = useIsMobile();
   const portfolioValue = "127,543.21";
   const pnl24h = "+3,247.89";
   const activePositions = dashboardData?.positions?.length || 12;
@@ -48,7 +51,7 @@ export default function MainDashboard({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="trading-panel panel-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -61,7 +64,7 @@ export default function MainDashboard({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="trading-panel panel-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -74,7 +77,7 @@ export default function MainDashboard({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="trading-panel panel-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
