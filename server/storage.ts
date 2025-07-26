@@ -135,6 +135,7 @@ export class MemStorage implements IStorage {
       title: "Bitcoin ETF Approval Expected Soon",
       summary: "Market analysts predict potential approval could drive BTC to new highs...",
       source: "CoinDesk", 
+      url: "https://coindesk.com/bitcoin-etf-approval",
       impact: "high",
       sentiment: "positive",
       publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
@@ -155,7 +156,8 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      portfolioValue: insertUser.portfolioValue ?? "0", 
       id,
       createdAt: new Date(),
     };
@@ -179,6 +181,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const asset: Asset = {
       ...insertAsset,
+      priceChange24h: insertAsset.priceChange24h ?? "0",
+      volume24h: insertAsset.volume24h ?? "0", 
+      marketCap: insertAsset.marketCap ?? "0",
       id,
       lastUpdated: new Date(),
     };
@@ -208,6 +213,8 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const position: Position = {
       ...insertPosition,
+      pnl: insertPosition.pnl ?? "0",
+      pnlPercentage: insertPosition.pnlPercentage ?? "0",
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -257,6 +264,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const insight: AiInsight = {
       ...insertInsight,
+      assetId: insertInsight.assetId ?? null,
+      metadata: insertInsight.metadata ?? {},
+      isActive: insertInsight.isActive ?? true,
       id,
       createdAt: new Date(),
     };
@@ -274,6 +284,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const newsItem: NewsItem = {
       ...insertNewsItem,
+      url: insertNewsItem.url ?? null,
+      impact: insertNewsItem.impact ?? null,
+      sentiment: insertNewsItem.sentiment ?? null,
       id,
       createdAt: new Date(),
     };

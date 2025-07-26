@@ -9,6 +9,8 @@ import NewsFeed from './news-feed';
 import MarketCorrelation from './market-correlation';
 import PatternMatching from './pattern-matching';
 import SystemStatus from './system-status';
+import RAGAnalysis from './rag-analysis';
+import WorkerQueue from './worker-queue';
 import { DashboardData, MarketData, AIInsight } from '@/types/trading';
 
 interface MainDashboardProps {
@@ -114,6 +116,12 @@ export default function MainDashboard({
         <RecentTrades trades={dashboardData?.trades || []} />
         <NewsFeed news={dashboardData?.news || []} />
         <MarketCorrelation />
+      </div>
+
+      {/* Enhanced Analysis Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <RAGAnalysis symbol="BTC" />
+        <WorkerQueue />
       </div>
 
       {/* Historical Pattern Matching */}

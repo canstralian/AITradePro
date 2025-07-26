@@ -4,6 +4,9 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { marketDataService } from "./services/market-data";
 import { aiAnalysisService } from "./services/ai-analysis";
+import { vectorStoreService } from "./services/vector-store";
+import { asyncWorkerService } from "./services/async-workers";
+import { apiRateLimit, tradingRateLimit, securityHeaders, validateSymbol } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -14,9 +17,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', (ws: WebSocket) => {
     console.log('Client connected to WebSocket');
     
-    // Add client to both services
+    // Add client to all services
     marketDataService.addClient(ws);
     aiAnalysisService.addClient(ws);
+    asyncWorkerService.addClient(ws);
     
     // Handle incoming messages
     ws.on('message', async (data) => {
@@ -25,13 +29,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (message.type === 'ai_query') {
           const response = await aiAnalysisService.processNaturalLanguageQuery(message.query);
+          
+          // Also perform enhanced RAG analysis
+          const ragAnalysis = await vectorStoreService.performRAGAnalysis(message.query, 'BTC');
+          
           ws.send(JSON.stringify({
             type: 'ai_response',
             data: {
               query: message.query,
               response,
+              ragAnalysis,
               timestamp: new Date().toISOString(),
             }
+          }));
+        }
+        
+        if (message.type === 'enqueue_analysis') {
+          const taskId = await asyncWorkerService.enqueueTask({
+            type: message.analysisType || 'market_analysis',
+            payload: message.payload,
+            priority: message.priority || 'medium'
+          });
+          
+          ws.send(JSON.stringify({
+            type: 'task_queued',
+            data: { taskId, status: 'queued' }
           }));
         }
       } catch (error) {
@@ -50,6 +72,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }));
   });
 
+  // Apply security middleware to all routes
+  app.use(securityHeaders);
+  app.use('/api', apiRateLimit);
+
   // REST API Routes
 
   // Get all assets
@@ -63,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get specific asset
-  app.get("/api/assets/:id", async (req, res) => {
+  app.get("/api/assets/:id", validateSymbol, async (req, res) => {
     try {
       const asset = await storage.getAsset(req.params.id);
       if (!asset) {
@@ -152,6 +178,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard data" });
+    }
+  });
+
+  // Enhanced RAG Analysis endpoint
+  app.get("/api/rag-analysis/:symbol", validateSymbol, async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const { query } = req.query;
+      
+      const analysis = await vectorStoreService.performRAGAnalysis(
+        query as string || `Analyze ${symbol}`,
+        symbol
+      );
+      
+      res.json({
+        symbol,
+        analysis,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ message: "RAG analysis failed" });
+    }
+  });
+
+  // Worker queue status endpoint
+  app.get("/api/workers/status", async (req, res) => {
+    try {
+      const status = asyncWorkerService.getQueueStatus();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch worker status" });
+    }
+  });
+
+  // Enqueue analysis task endpoint
+  app.post("/api/workers/enqueue", async (req, res) => {
+    try {
+      const { type, payload, priority = 'medium' } = req.body;
+      
+      const taskId = await asyncWorkerService.enqueueTask({
+        type,
+        payload,
+        priority
+      });
+      
+      res.json({ taskId, status: 'queued' });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to enqueue task" });
+    }
+  });
+
+  // Get task result endpoint
+  app.get("/api/workers/result/:taskId", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const result = asyncWorkerService.getTaskResult(taskId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task result" });
     }
   });
 

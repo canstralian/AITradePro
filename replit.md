@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a sophisticated AI-Enhanced trading analysis platform built with a modern full-stack architecture. The system combines real-time market data processing, AI-powered analysis, and an intuitive trading interface to provide comprehensive trading insights and portfolio management capabilities.
+This is a sophisticated AI-Enhanced trading analysis platform built with a modern full-stack architecture. The system combines real-time market data processing, AI-powered analysis with RAG (Retrieval-Augmented Generation) technology, asynchronous worker processing, and an intuitive Bloomberg Terminal-inspired trading interface to provide comprehensive trading insights and portfolio management capabilities.
 
 ## User Preferences
 
@@ -42,9 +42,12 @@ Preferred communication style: Simple, everyday language.
 
 ### AI Analysis Engine
 - **AI Analysis Service**: Generates sentiment analysis, pattern matching, and news impact insights
-- **Natural Language Processing**: Handles user queries and provides contextual responses
-- **Insight Generation**: Automated creation of trading insights with confidence scores
-- **Real-time Distribution**: WebSocket delivery of AI insights to connected clients
+- **RAG Technology**: Vector-based contextual analysis correlating market movements with news, social media, and on-chain data
+- **Natural Language Processing**: Handles user queries and provides contextual responses with enhanced RAG analysis
+- **Asynchronous Worker System**: Multi-threaded analysis processing with priority queuing for simultaneous multi-asset analysis
+- **Vector Store Service**: Manages embeddings and performs similarity searches for historical pattern matching
+- **Insight Generation**: Automated creation of trading insights with confidence scores and supporting evidence
+- **Real-time Distribution**: WebSocket delivery of AI insights and worker results to connected clients
 
 ### Trading Interface
 - **Dashboard**: Comprehensive trading dashboard with portfolio overview, price charts, and market data
@@ -53,8 +56,11 @@ Preferred communication style: Simple, everyday language.
 - **Trade History**: Complete trade execution history with filtering and analysis
 
 ### UI Component System
-- **Design System**: Consistent trading-themed components using Shadcn/ui
+- **Design System**: Consistent trading-themed components using Shadcn/ui with Bloomberg Terminal-inspired dark theme
 - **Chart Integration**: Recharts for data visualization including price charts and portfolio allocation
+- **Enhanced Components**: RAG Analysis interface for contextual queries and Worker Queue management panel
+- **Real-time Updates**: Live worker status monitoring and task result visualization
+- **Security Features**: Rate limiting displays, API protection indicators, and secure authentication flows
 - **Responsive Design**: Mobile-first approach with trading-optimized layouts
 - **Accessibility**: Full keyboard navigation and screen reader support
 
@@ -89,6 +95,14 @@ Preferred communication style: Simple, everyday language.
 - **@tanstack/react-query**: Server state management and caching
 - **recharts**: Data visualization and charting library
 - **ws**: WebSocket server implementation
+- **express-rate-limit**: API protection and rate limiting
+- **jsonwebtoken**: Secure authentication and authorization
+
+### Security & Performance
+- **express-rate-limit**: Protection against API abuse and DDoS
+- **Security middleware**: XSS protection, CSRF prevention, secure headers
+- **Input validation**: Symbol validation and SQL injection prevention
+- **Async processing**: Worker queue system for heavy computational tasks
 
 ### UI Dependencies
 - **@radix-ui/***: Accessible UI primitives for complex components
