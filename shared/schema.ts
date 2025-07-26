@@ -79,6 +79,20 @@ export const marketData = pgTable("market_data", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const workerTasks = pgTable("worker_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskId: text("task_id").notNull().unique(),
+  type: text("type").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending' | 'running' | 'completed' | 'failed'
+  priority: text("priority").notNull().default("medium"), // 'low' | 'medium' | 'high'
+  payload: jsonb("payload").notNull(),
+  result: jsonb("result"),
+  error: text("error"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -116,6 +130,11 @@ export const insertMarketDataSchema = createInsertSchema(marketData).omit({
   timestamp: true,
 });
 
+export const insertWorkerTaskSchema = createInsertSchema(workerTasks).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -131,3 +150,5 @@ export type NewsItem = typeof newsItems.$inferSelect;
 export type InsertNewsItem = z.infer<typeof insertNewsItemSchema>;
 export type MarketData = typeof marketData.$inferSelect;
 export type InsertMarketData = z.infer<typeof insertMarketDataSchema>;
+export type WorkerTask = typeof workerTasks.$inferSelect;
+export type InsertWorkerTask = z.infer<typeof insertWorkerTaskSchema>;

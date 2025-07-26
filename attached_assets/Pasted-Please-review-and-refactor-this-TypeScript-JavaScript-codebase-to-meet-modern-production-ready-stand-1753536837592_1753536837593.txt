@@ -1,0 +1,47 @@
+Please review and refactor this TypeScript/JavaScript codebase to meet modern production-ready standards. Here's what I need:
+
+---
+
+1. 🧱 **Code Quality & Structure**
+   - Refactor to follow modern ECMAScript + TypeScript best practices
+   - Apply consistent formatting via Prettier and ESLint
+   - Strictly type all interfaces, parameters, and return types (TypeScript)
+   - Break large files into smaller, cohesive modules using barrel (`index.ts`) exports
+   - Normalize project structure: `src/`, `tests/`, `types/`, `utils/`, etc.
+
+2. 📚 **Documentation**
+   - Create or update:
+     - `README.md` with: project overview, setup, usage, and contribution guidelines
+     - `tsconfig.json`, `.eslintrc`, `.prettierrc`, and `.gitignore`
+     - `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE` (MIT unless specified)
+     - Add JSDoc/TSdoc comments to all public functions/classes
+
+3. 🧪 **Testing**
+   - If no tests exist, generate sample unit tests (using Jest or Vitest)
+   - Setup test folder structure: `tests/` or `__tests__/` inside `src/`
+   - Ensure test coverage is minimally 80% (add NYC/Istanbul config if needed)
+
+4. 🚀 **Production Build & GitHub Release**
+   - Prepare a production-optimized build using a bundler (`esbuild`, `vite`, or `webpack`)
+   - Output to a clean `dist/` or `build/` directory
+   - Create a GitHub-compatible release:
+     - Tag a new version using Semantic Versioning (`v1.0.0`)
+     - Push `dist/` build and changelog to GitHub
+     - Generate release notes in markdown and link changelog
+   - Add GitHub Actions CI workflow to:
+     - Lint (`eslint`)
+     - Type-check (`tsc --noEmit`)
+     - Build (`npm run build`)
+     - Test (`npm test`)
+     - Deploy release artifacts if needed
+
+5. 📦 **Package & Dependencies**
+   - Clean `package.json`: scripts, dependencies, devDependencies
+   - Add `prepare`/`prepublishOnly` hooks if this is a library
+   - Audit for outdated/vulnerable packages (`npm audit fix`, `npm-check-updates`)
+
+---
+
+This should result in a clean, modular, production-ready TypeScript/JavaScript application following GitHub's open-source best practices. Begin by scanning the codebase and summarizing the most critical improvements before applying changes.
+
+Use TODOs and scaffolds where deeper context is needed.
