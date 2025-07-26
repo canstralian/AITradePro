@@ -12,7 +12,9 @@ import {
   type NewsItem,
   type InsertNewsItem,
   type MarketData,
-  type InsertMarketData
+  type InsertMarketData,
+  type WorkerTask,
+  type InsertWorkerTask
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -49,6 +51,11 @@ export interface IStorage {
   // Market Data
   getMarketData(assetId: string, limit?: number): Promise<MarketData[]>;
   addMarketData(data: InsertMarketData): Promise<MarketData>;
+  
+  // Worker Tasks
+  createWorkerTask(task: InsertWorkerTask): Promise<WorkerTask>;
+  getWorkerTask(taskId: string): Promise<WorkerTask | undefined>;
+  updateWorkerTask(taskId: string, updates: Partial<WorkerTask>): Promise<WorkerTask | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -311,6 +318,26 @@ export class MemStorage implements IStorage {
     this.marketData.set(id, data);
     return data;
   }
+
+  // Worker Tasks (mock implementation for MemStorage)
+  async createWorkerTask(taskData: InsertWorkerTask): Promise<WorkerTask> {
+    const task: WorkerTask = {
+      id: randomUUID(),
+      ...taskData,
+      createdAt: new Date(),
+    };
+    return task;
+  }
+
+  async getWorkerTask(taskId: string): Promise<WorkerTask | undefined> {
+    return undefined; // Mock implementation
+  }
+
+  async updateWorkerTask(taskId: string, updates: Partial<WorkerTask>): Promise<WorkerTask | undefined> {
+    return undefined; // Mock implementation
+  }
 }
 
-export const storage = new MemStorage();
+import { DatabaseStorage } from './storage-db';
+
+export const storage = new DatabaseStorage();
