@@ -64,7 +64,7 @@ export default function AIInsights({ insights }: AIInsightsProps) {
       <CardContent>
         <div className="space-y-4">
           {displayInsights.map((insight, index) => (
-            <div key={`insight-${index}-${insight.timestamp.getTime()}`} className="trading-bg rounded-lg p-3">
+            <div key={`insight-${index}-${insight.timestamp}`} className="trading-bg rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">{insight.title}</span>
                 <div className="flex items-center space-x-2">

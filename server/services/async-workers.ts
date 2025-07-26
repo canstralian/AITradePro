@@ -19,8 +19,13 @@ export interface WorkerResult {
   error?: string;
 }
 
+class WorkerInstance {
+  public busy: boolean = false;
+  constructor(public id: string) {}
+}
+
 export class AsyncWorkerService extends EventEmitter {
-  private workers: Map<string, Worker> = new Map();
+  private workers: Map<string, WorkerInstance> = new Map();
   private taskQueue: WorkerTask[] = [];
   private activeTasks: Map<string, WorkerTask> = new Map();
   private results: Map<string, WorkerResult> = new Map();
@@ -37,7 +42,7 @@ export class AsyncWorkerService extends EventEmitter {
 
   private initializeWorkers() {
     for (let i = 0; i < this.MAX_WORKERS; i++) {
-      const worker = new Worker(`worker-${i}`);
+      const worker = new WorkerInstance(`worker-${i}`);
       this.workers.set(worker.id, worker);
     }
   }
@@ -129,7 +134,7 @@ export class AsyncWorkerService extends EventEmitter {
     this.broadcastWorkerStatus();
   }
 
-  private async processTask(worker: Worker, task: WorkerTask): Promise<void> {
+  private async processTask(worker: WorkerInstance, task: WorkerTask): Promise<void> {
     const startTime = Date.now();
     
     try {
@@ -232,7 +237,7 @@ export class AsyncWorkerService extends EventEmitter {
     return {
       symbol,
       correlations,
-      overallSentiment: correlations.reduce((sum, c) => sum + c.correlation, 0) / correlations.length,
+      overallSentiment: correlations.reduce((sum: number, c: any) => sum + c.correlation, 0) / correlations.length,
       timestamp: new Date().toISOString()
     };
   }

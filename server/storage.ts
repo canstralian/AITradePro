@@ -324,6 +324,12 @@ export class MemStorage implements IStorage {
     const task: WorkerTask = {
       id: randomUUID(),
       ...taskData,
+      error: taskData.error ?? null,
+      startedAt: taskData.startedAt ?? null,
+      completedAt: taskData.completedAt ?? null,
+      priority: taskData.priority ?? "medium",
+      status: taskData.status ?? "pending",
+      result: taskData.result ?? null,
       createdAt: new Date(),
     };
     return task;
