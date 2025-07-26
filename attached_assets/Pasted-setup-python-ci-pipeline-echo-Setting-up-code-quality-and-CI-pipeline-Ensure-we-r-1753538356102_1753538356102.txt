@@ -1,0 +1,141 @@
+setup_python_ci_pipeline() {
+  echo "🔧 Setting up code quality and CI pipeline..."
+
+  # Ensure we're in a Python project
+  if [[ ! -f "pyproject.toml" && ! -f "requirements.txt" ]]; then
+    echo "❌ No Python project detected. Make sure you're in the root of your Python repo."
+    return 1
+  fi
+
+  echo "📦 Installing quality tools..."
+  pip install --upgrade pip
+  pip install \
+    black \
+    isort \
+    flake8 \
+    mypy \
+    bandit \
+    safety \
+    ruff \
+    pre-commit
+
+  echo "🗂️ Creating config files..."
+
+  # black config (pyproject.toml preferred)
+  if [[ ! -f "pyproject.toml" ]]; then
+    echo "[tool.black]
+line-length = 88
+target-version = ['py39']" > pyproject.toml
+  fi
+
+  # isort config
+  echo "[tool.isort]
+profile = 'black'
+line_length = 88" >> pyproject.toml
+
+  # flake8 config
+  echo "[flake8]
+max-line-length = 88
+extend-ignore = E203, W503
+exclude = .git,__pycache__,env,venv,.venv
+" > .flake8
+
+  # mypy config
+  echo "[mypy]
+python_version = 3.9
+ignore_missing_imports = True
+strict = True" > mypy.ini
+
+  # bandit config
+  echo "[bandit]
+skips = ['B101']
+" > bandit.yaml
+
+  # Ruff config (optional)
+  echo "[tool.ruff]
+line-length = 88
+select = ['E', 'F', 'B']
+ignore = ['E203', 'W503']
+" >> pyproject.toml
+
+  echo "✅ Writing .pre-commit-config.yaml..."
+  cat <<EOF > .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+
+  - repo: https://github.com/PyCQA/isort
+    rev: stable
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pycqa/flake8
+    rev: latest
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+
+  - repo: https://github.com/pre-commit/mirrors-ruff
+    rev: v0.4.0
+    hooks:
+      - id: ruff
+EOF
+
+  echo "🧪 Initializing pre-commit..."
+  pre-commit install
+
+  echo "📝 Creating GitHub Actions workflow..."
+  mkdir -p .github/workflows
+  cat <<EOF > .github/workflows/lint-and-quality.yml
+name: Code Quality & Linting
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort flake8 mypy bandit safety ruff
+
+      - name: Run Black
+        run: black --check .
+
+      - name: Run isort
+        run: isort --check-only .
+
+      - name: Run Flake8
+        run: flake8 .
+
+      - name: Run Mypy
+        run: mypy .
+
+      - name: Run Bandit
+        run: bandit -r . -c bandit.yaml
+
+      - name: Run Ruff
+        run: ruff check .
+EOF
+
+  echo "🎉 All tools installed and configured with CI/CD!"
+}
