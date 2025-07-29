@@ -49,6 +49,7 @@ export class MarketDataService {
         assetId: asset.id,
         price: newPrice.toFixed(8),
         volume: (Math.random() * 1000000).toFixed(2),
+        timestamp: new Date(),
       });
 
       // Broadcast to connected clients
@@ -102,6 +103,7 @@ export class MarketDataService {
         assetId,
         price: price.toFixed(8),
         volume: (Math.random() * 1000000).toFixed(2),
+        timestamp,
       });
     }
   }

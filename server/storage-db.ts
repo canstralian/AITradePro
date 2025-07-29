@@ -1,10 +1,10 @@
 import { db } from './db';
 import { 
-  users, assets, positions, trades, aiInsights, newsItems, marketData, workerTasks,
+  users, assets, userPositions, trades, aiInsights, newsItems, marketData,
   type User, type Asset, type Position, type Trade, type AiInsight, type NewsItem,
-  type MarketData, type WorkerTask, type InsertUser, type InsertAsset,
+  type MarketData, type InsertUser, type InsertAsset,
   type InsertPosition, type InsertTrade, type InsertAiInsight, type InsertNewsItem,
-  type InsertMarketData, type InsertWorkerTask
+  type InsertMarketData
 } from '../shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { IStorage } from './storage';
@@ -23,6 +23,7 @@ export class DatabaseStorage implements IStorage {
       // Seed assets
       const assetData: InsertAsset[] = [
         {
+          id: "btc-bitcoin",
           symbol: "BTC",
           name: "Bitcoin",
           currentPrice: "43247.89",
@@ -31,6 +32,7 @@ export class DatabaseStorage implements IStorage {
           marketCap: "847000000000",
         },
         {
+          id: "eth-ethereum",
           symbol: "ETH",
           name: "Ethereum", 
           currentPrice: "2847.21",
@@ -39,6 +41,7 @@ export class DatabaseStorage implements IStorage {
           marketCap: "342000000000",
         },
         {
+          id: "sol-solana",
           symbol: "SOL",
           name: "Solana",
           currentPrice: "98.45",
@@ -52,6 +55,7 @@ export class DatabaseStorage implements IStorage {
 
       // Seed sample user
       const userData: InsertUser = {
+        id: "user-1",
         username: "alexchen",
         password: "hashed_password",
         email: "alex@trading.com",
@@ -63,21 +67,23 @@ export class DatabaseStorage implements IStorage {
       // Seed AI insights
       const insightData: InsertAiInsight[] = [
         {
+          id: "insight-1",
           assetId: createdAssets[0].id,
           type: "sentiment",
           title: "Market Sentiment",
           description: "Strong accumulation detected. Whale activity increased 34% in last 4 hours.",
           confidence: "89.00",
-          metadata: { status: "Bullish" },
+          metadata: JSON.stringify({ status: "Bullish" }),
           isActive: true,
         },
         {
+          id: "insight-2", 
           assetId: createdAssets[1].id,
           type: "pattern",
           title: "Pattern Recognition",
           description: "Ascending triangle formation detected with 78% historical accuracy.",
           confidence: "78.00",
-          metadata: { pattern: "Ascending Triangle" },
+          metadata: JSON.stringify({ pattern: "Ascending Triangle" }),
           isActive: true,
         }
       ];
@@ -87,17 +93,21 @@ export class DatabaseStorage implements IStorage {
       // Seed news items
       const newsData: InsertNewsItem[] = [
         {
+          id: "news-1",
           title: "Bitcoin ETF Approval Signals",
           summary: "Growing institutional interest as major financial institutions file for Bitcoin ETF approvals.",
           source: "CryptoNews",
+          url: "https://cryptonews.com/bitcoin-etf-approval",
           impact: "high",
           sentiment: "positive",
           publishedAt: new Date(),
         },
         {
+          id: "news-2",
           title: "Ethereum Layer 2 Adoption Surge",
           summary: "Layer 2 solutions see record transaction volumes as gas fees remain low.",
           source: "BlockchainDaily",
+          url: "https://blockchain-daily.com/layer2-adoption",
           impact: "medium", 
           sentiment: "positive",
           publishedAt: new Date(),
@@ -153,7 +163,7 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         currentPrice: price, 
         priceChange24h,
-        lastUpdated: new Date()
+        updatedAt: new Date()
       })
       .where(eq(assets.id, id))
       .returning();
@@ -162,19 +172,19 @@ export class DatabaseStorage implements IStorage {
 
   // Positions
   async getUserPositions(userId: string): Promise<Position[]> {
-    return await db.select().from(positions).where(eq(positions.userId, userId));
+    return await db.select().from(userPositions).where(eq(userPositions.userId, userId));
   }
 
   async createPosition(positionData: InsertPosition): Promise<Position> {
-    const [position] = await db.insert(positions).values(positionData).returning();
+    const [position] = await db.insert(userPositions).values(positionData).returning();
     return position;
   }
 
   async updatePosition(id: string, updates: Partial<Position>): Promise<Position | undefined> {
     const [position] = await db
-      .update(positions)
+      .update(userPositions)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(positions.id, id))
+      .where(eq(userPositions.id, id))
       .returning();
     return position || undefined;
   }
@@ -185,7 +195,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(trades)
       .where(eq(trades.userId, userId))
-      .orderBy(desc(trades.executedAt))
+      .orderBy(desc(trades.timestamp))
       .limit(limit);
   }
 
@@ -236,43 +246,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addMarketData(data: InsertMarketData): Promise<MarketData> {
-    const [marketDataPoint] = await db.insert(marketData).values(data).returning();
+    const dataWithId = { 
+      ...data, 
+      id: `md-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: data.timestamp ?? new Date()
+    };
+    const [marketDataPoint] = await db.insert(marketData).values(dataWithId).returning();
     return marketDataPoint;
   }
 
-  // Worker Tasks
-  async createWorkerTask(taskData: InsertWorkerTask): Promise<WorkerTask> {
-    const [task] = await db.insert(workerTasks).values(taskData).returning();
-    return task;
-  }
 
-  async getWorkerTask(taskId: string): Promise<WorkerTask | undefined> {
-    const [task] = await db.select().from(workerTasks).where(eq(workerTasks.taskId, taskId));
-    return task || undefined;
-  }
-
-  async updateWorkerTask(taskId: string, updates: Partial<WorkerTask>): Promise<WorkerTask | undefined> {
-    const [task] = await db
-      .update(workerTasks)
-      .set(updates)
-      .where(eq(workerTasks.taskId, taskId))
-      .returning();
-    return task || undefined;
-  }
-
-  async getActiveTasks(): Promise<WorkerTask[]> {
-    return await db
-      .select()
-      .from(workerTasks)
-      .where(eq(workerTasks.status, 'running'));
-  }
-
-  async getPendingTasks(limit = 10): Promise<WorkerTask[]> {
-    return await db
-      .select()
-      .from(workerTasks)
-      .where(eq(workerTasks.status, 'pending'))
-      .orderBy(desc(workerTasks.createdAt))
-      .limit(limit);
-  }
 }

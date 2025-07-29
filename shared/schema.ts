@@ -16,7 +16,7 @@ export const assets = pgTable("assets", {
   symbol: text("symbol").notNull().unique(),
   name: text("name").notNull(),
   currentPrice: decimal("current_price", { precision: 15, scale: 8 }).notNull(),
-  change24h: decimal("change_24h", { precision: 10, scale: 4 }).notNull(),
+  priceChange24h: decimal("price_change_24h", { precision: 10, scale: 4 }).notNull(),
   volume24h: decimal("volume_24h", { precision: 20, scale: 2 }).notNull(),
   marketCap: decimal("market_cap", { precision: 20, scale: 2 }).notNull(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -94,9 +94,16 @@ export const selectNewsSchema = createSelectSchema(newsItems);
 
 // TypeScript types
 export type User = z.infer<typeof selectUserSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Asset = z.infer<typeof selectAssetSchema>;
+export type InsertAsset = z.infer<typeof insertAssetSchema>;
 export type MarketData = z.infer<typeof selectMarketDataSchema>;
+export type InsertMarketData = z.infer<typeof insertMarketDataSchema>;
 export type Position = z.infer<typeof selectPositionSchema>;
+export type InsertPosition = z.infer<typeof insertPositionSchema>;
 export type Trade = z.infer<typeof selectTradeSchema>;
+export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type AiInsight = z.infer<typeof selectInsightSchema>;
+export type InsertAiInsight = z.infer<typeof insertInsightSchema>;
 export type NewsItem = z.infer<typeof selectNewsSchema>;
+export type InsertNewsItem = z.infer<typeof insertNewsSchema>;

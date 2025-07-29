@@ -12,9 +12,7 @@ import {
   type NewsItem,
   type InsertNewsItem,
   type MarketData,
-  type InsertMarketData,
-  type WorkerTask,
-  type InsertWorkerTask
+  type InsertMarketData
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -51,11 +49,6 @@ export interface IStorage {
   // Market Data
   getMarketData(assetId: string, limit?: number): Promise<MarketData[]>;
   addMarketData(data: InsertMarketData): Promise<MarketData>;
-  
-  // Worker Tasks
-  createWorkerTask(task: InsertWorkerTask): Promise<WorkerTask>;
-  getWorkerTask(taskId: string): Promise<WorkerTask | undefined>;
-  updateWorkerTask(taskId: string, updates: Partial<WorkerTask>): Promise<WorkerTask | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -81,7 +74,7 @@ export class MemStorage implements IStorage {
       priceChange24h: "2.34",
       volume24h: "28500000000",
       marketCap: "847000000000",
-      lastUpdated: new Date(),
+      updatedAt: new Date(),
     };
     
     const eth: Asset = {
@@ -92,7 +85,7 @@ export class MemStorage implements IStorage {
       priceChange24h: "1.89",
       volume24h: "15600000000",
       marketCap: "342000000000",
-      lastUpdated: new Date(),
+      updatedAt: new Date(),
     };
 
     const sol: Asset = {
@@ -103,7 +96,7 @@ export class MemStorage implements IStorage {
       priceChange24h: "12.4",
       volume24h: "2800000000",
       marketCap: "43000000000",
-      lastUpdated: new Date(),
+      updatedAt: new Date(),
     };
 
     this.assets.set(btc.id, btc);
@@ -129,7 +122,7 @@ export class MemStorage implements IStorage {
       title: "Market Sentiment",
       description: "Strong accumulation detected. Whale activity increased 34% in last 4 hours.",
       confidence: "89.00",
-      metadata: { status: "Bullish" },
+      metadata: JSON.stringify({ status: "Bullish" }),
       isActive: true,
       createdAt: new Date(),
     };
@@ -192,7 +185,7 @@ export class MemStorage implements IStorage {
       volume24h: insertAsset.volume24h ?? "0", 
       marketCap: insertAsset.marketCap ?? "0",
       id,
-      lastUpdated: new Date(),
+      updatedAt: new Date(),
     };
     this.assets.set(id, asset);
     return asset;
@@ -206,7 +199,7 @@ export class MemStorage implements IStorage {
       ...asset,
       currentPrice: price,
       priceChange24h,
-      lastUpdated: new Date(),
+      updatedAt: new Date(),
     };
     this.assets.set(id, updatedAsset);
     return updatedAsset;
@@ -220,8 +213,6 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const position: Position = {
       ...insertPosition,
-      pnl: insertPosition.pnl ?? "0",
-      pnlPercentage: insertPosition.pnlPercentage ?? "0",
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -246,7 +237,7 @@ export class MemStorage implements IStorage {
   async getUserTrades(userId: string, limit = 10): Promise<Trade[]> {
     return Array.from(this.trades.values())
       .filter(trade => trade.userId === userId)
-      .sort((a, b) => b.executedAt!.getTime() - a.executedAt!.getTime())
+      .sort((a, b) => b.timestamp!.getTime() - a.timestamp!.getTime())
       .slice(0, limit);
   }
 
@@ -254,8 +245,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const trade: Trade = {
       ...insertTrade,
+      status: insertTrade.status ?? "completed",
       id,
-      executedAt: new Date(),
+      timestamp: new Date(),
     };
     this.trades.set(id, trade);
     return trade;
@@ -272,7 +264,7 @@ export class MemStorage implements IStorage {
     const insight: AiInsight = {
       ...insertInsight,
       assetId: insertInsight.assetId ?? null,
-      metadata: insertInsight.metadata ?? {},
+      metadata: insertInsight.metadata ?? null,
       isActive: insertInsight.isActive ?? true,
       id,
       createdAt: new Date(),
@@ -319,29 +311,7 @@ export class MemStorage implements IStorage {
     return data;
   }
 
-  // Worker Tasks (mock implementation for MemStorage)
-  async createWorkerTask(taskData: InsertWorkerTask): Promise<WorkerTask> {
-    const task: WorkerTask = {
-      id: randomUUID(),
-      ...taskData,
-      error: taskData.error ?? null,
-      startedAt: taskData.startedAt ?? null,
-      completedAt: taskData.completedAt ?? null,
-      priority: taskData.priority ?? "medium",
-      status: taskData.status ?? "pending",
-      result: taskData.result ?? null,
-      createdAt: new Date(),
-    };
-    return task;
-  }
 
-  async getWorkerTask(taskId: string): Promise<WorkerTask | undefined> {
-    return undefined; // Mock implementation
-  }
-
-  async updateWorkerTask(taskId: string, updates: Partial<WorkerTask>): Promise<WorkerTask | undefined> {
-    return undefined; // Mock implementation
-  }
 }
 
 import { DatabaseStorage } from './storage-db';
