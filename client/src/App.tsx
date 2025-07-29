@@ -1,31 +1,23 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import Dashboard from "@/pages/dashboard";
-import NotFound from "@/pages/not-found";
+import { Route, Switch } from "wouter"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { useIsMobile } from "./hooks/use-mobile"
+import Dashboard from "./pages/dashboard"
+import NotFound from "./pages/not-found"
+import "./index.css"
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+const queryClient = new QueryClient()
 
 function App() {
+  const isMobile = useIsMobile()
+
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="dark">
-          <Toaster />
-          <Router />
-        </div>
-      </TooltipProvider>
+      <div className={`min-h-screen bg-background text-foreground ${isMobile ? 'overflow-x-hidden' : ''}`}>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
     </QueryClientProvider>
-  );
+  )
 }
-
-export default App;

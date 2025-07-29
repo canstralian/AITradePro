@@ -136,4 +136,44 @@
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  /* Mobile optimizations */
+  @media (max-width: 767px) {
+    .mobile-compact {
+      padding: 0.5rem;
+    }
+    
+    .mobile-text-sm {
+      font-size: 0.75rem;
+    }
+    
+    .mobile-spacing-tight {
+      gap: 0.5rem;
+    }
+    
+    .mobile-card {
+      padding: 0.75rem;
+    }
+    
+    .mobile-hide {
+      display: none;
+    }
+    
+    /* Touch-friendly sizing */
+    .mobile-touch {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Improved scrolling on mobile */
+    .mobile-scroll {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }

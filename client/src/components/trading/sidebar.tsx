@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { MarketData, AIInsight } from '@/types/trading';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   onAIQuery: (query: string) => void;
@@ -29,14 +30,14 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
 
   const handleQuerySubmit = () => {
     if (!queryInput.trim()) return;
-    
+
     // Add user message to conversation
     setConversation(prev => [{
       type: 'user',
       message: queryInput,
       timestamp: new Date()
     }, ...prev]);
-    
+
     // Send query to AI
     onAIQuery(queryInput);
     setQueryInput('');
@@ -48,15 +49,17 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
     { symbol: 'LUNA', change: '-5.2%', positive: false },
   ];
 
+  const isMobile = useIsMobile()
+
   return (
-    <aside className="w-80 trading-panel border-r trading-border p-4 overflow-y-auto scrollbar-thin">
+    <aside className={`trading-panel border-r trading-border p-4 overflow-y-auto scrollbar-thin ${isMobile ? 'w-full' : 'w-80'}`}>
       {/* AI Assistant */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
           <Bot className="trading-primary mr-2 w-5 h-5" />
           AI Assistant
         </h3>
-        
+
         <Card className="trading-bg panel-shadow">
           <CardContent className="pt-4">
             <div className="flex items-center space-x-2 mb-3">
@@ -75,7 +78,7 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            
+
             {/* AI Conversation */}
             <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
               {conversation.map((item, index) => (
@@ -131,7 +134,7 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
               <span className="text-xs trading-muted">Extreme Greed</span>
             </CardContent>
           </Card>
-          
+
           <Card className="trading-bg panel-shadow">
             <CardContent className="p-3">
               <div className="text-sm font-medium mb-2">Top Movers</div>
