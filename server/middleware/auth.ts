@@ -1,3 +1,4 @@
+
 import { Request, Response, NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
 
@@ -44,21 +45,18 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
   next();
 };
 
-// Input validation middleware
+// Symbol validation middleware
 export const validateSymbol = (req: Request, res: Response, next: NextFunction) => {
-  const { symbol } = req.params;
+  const { id, symbol } = req.params;
+  const symbolToValidate = symbol || id;
   
-  if (!symbol || symbol.length < 2 || symbol.length > 20) {
-    return res.status(400).json({ error: 'Invalid symbol format' });
-  }
+  const validSymbols = ['BTC', 'ETH', 'SOL', 'ADA', 'MATIC', 'DOT'];
   
-  // Sanitize symbol (alphanumeric only)
-  if (!/^[A-Z0-9]+$/i.test(symbol)) {
-    return res.status(400).json({ error: 'Symbol must contain only alphanumeric characters' });
+  if (symbolToValidate && !validSymbols.includes(symbolToValidate.toUpperCase())) {
+    return res.status(400).json({ error: 'Invalid symbol' });
   }
   
   next();
