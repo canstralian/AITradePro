@@ -71,12 +71,13 @@ export class AIAnalysisService {
     const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
     
     await storage.createInsight({
+      id: `insight-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       assetId,
       type: "sentiment",
       title: sentiment.title,
       description: sentiment.description,
       confidence: sentiment.confidence,
-      metadata: sentiment.metadata,
+      metadata: JSON.stringify(sentiment.metadata),
       isActive: true,
     });
 
@@ -108,12 +109,13 @@ export class AIAnalysisService {
     const pattern = patterns[Math.floor(Math.random() * patterns.length)];
     
     await storage.createInsight({
+      id: `insight-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       assetId,
       type: "pattern",
       title: pattern.title,
       description: pattern.description,
       confidence: pattern.confidence,
-      metadata: pattern.metadata,
+      metadata: JSON.stringify(pattern.metadata),
       isActive: true,
     });
 
@@ -145,12 +147,13 @@ export class AIAnalysisService {
     const newsInsight = newsInsights[Math.floor(Math.random() * newsInsights.length)];
     
     await storage.createInsight({
+      id: `insight-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       assetId,
       type: "news",
       title: newsInsight.title,
       description: newsInsight.description,
       confidence: newsInsight.confidence,
-      metadata: newsInsight.metadata,
+      metadata: JSON.stringify(newsInsight.metadata),
       isActive: true,
     });
 
