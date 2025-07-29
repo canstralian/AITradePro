@@ -248,7 +248,7 @@ export class DatabaseStorage implements IStorage {
   async addMarketData(data: InsertMarketData): Promise<MarketData> {
     const dataWithId = { 
       ...data, 
-      id: `md-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `md-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       timestamp: data.timestamp ?? new Date()
     };
     const [marketDataPoint] = await db.insert(marketData).values(dataWithId).returning();
