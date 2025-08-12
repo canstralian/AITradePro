@@ -2,8 +2,8 @@
 
 [![GitHub forks](https://img.shields.io/github/forks/Canstralian/ai-trading-platform.svg?style=social&label=Fork)](https://github.com/Canstralian/ai-trading-platform/fork)
 [![GitHub stars](https://img.shields.io/github/stars/Canstralian/ai-trading-platform.svg?style=social&label=Stars)](https://github.com/Canstralian/ai-trading-platform/stargazers)
-[![CI Pipeline](https://github.com/your-username/ai-trading-platform/workflows/CI%20Pipeline/badge.svg)](https://github.com/canstralian/ai-trading-platform/actions)
-[![codecov](https://codecov.io/gh/your-username/ai-trading-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/your-username/ai-trading-platform)
+[![CI Pipeline](https://github.com/canstralian/ai-trading-platform/workflows/CI%20Pipeline/badge.svg)](https://github.com/canstralian/ai-trading-platform/actions)
+[![codecov](https://codecov.io/gh/canstralian/ai-trading-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/canstralian/ai-trading-platform)
 
 A sophisticated AI-Enhanced trading analysis platform built with modern full-stack architecture. Features real-time market data processing, AI-powered analysis with RAG technology, and Bloomberg Terminal-inspired interface.
 
