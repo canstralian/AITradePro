@@ -1,10 +1,12 @@
 # AI Trading Platform
 
-[![GitHub forks](https://img.shields.io/github/forks/Canstralian/ai-trading-platform.svg?style=social&label=Fork)](https://github.com/Canstralian/ai-trading-platform/fork)
-[![GitHub stars](https://img.shields.io/github/stars/Canstralian/ai-trading-platform.svg?style=social&label=Stars)](https://github.com/Canstralian/ai-trading-platform/stargazers)
-[![CI Pipeline](https://github.com/your-username/ai-trading-platform/workflows/CI%20Pipeline/badge.svg)](https://github.com/canstralian/ai-trading-platform/actions)
-[![codecov](https://codecov.io/gh/your-username/ai-trading-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/your-username/ai-trading-platform)
+[![GitHub forks](https://img.shields.io/github/forks/canstralian/AITradePro.svg?style=social&label=Fork)](https://github.com/canstralian/AITradePro/fork)
+[![GitHub stars](https://img.shields.io/github/stars/canstralian/AITradePro.svg?style=social&label=Stars)](https://github.com/canstralian/AITradePro/stargazers)
+[![CI Pipeline](https://github.com/canstralian/AITradePro/actions/workflows/ci_pipeline.yml/badge.svg)](https://github.com/canstralian/AITradePro/actions/workflows/ci_pipeline.yml)
+[![codecov](https://codecov.io/gh/canstralian/AITradePro/branch/main/graph/badge.svg)](https://codecov.io/gh/canstralian/AITradePro)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+---
 A sophisticated AI-Enhanced trading analysis platform built with modern full-stack architecture. Features real-time market data processing, AI-powered analysis with RAG technology, and Bloomberg Terminal-inspired interface.
 
 ## 🚀 Features
@@ -50,7 +52,7 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/canstralian/ai-trading-platform.git
+   git clone https://github.com/your-username/ai-trading-platform.git
    cd ai-trading-platform
    ```
 
@@ -157,3 +159,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Inspired by Bloomberg Terminal interface design
 - Built with modern React and Node.js ecosystem
+- Powered by advanced AI analysis capabilities
