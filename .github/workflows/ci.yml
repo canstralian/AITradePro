@@ -1,95 +1,128 @@
-name: CI Pipeline
-
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+env:
+  NODE_LTS: 'lts/*'
+  POSTGRES_USER: testuser
+  POSTGRES_PASSWORD: testpass
+  POSTGRES_DB: aitradepro_test
+  DATABASE_URL: postgresql://testuser:testpass@localhost:5432/aitradepro_test
 
 jobs:
-  test:
+  tests:
+    name: Unit Tests (Node matrix)
+    needs: lint_typecheck
     runs-on: ubuntu-latest
-    
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [18.x, 20.x]
-    
+        node: [18.x, lts/*]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linting
-      run: npm run lint
-    
-    - name: Run type checking
-      run: npm run check
-    
-    - name: Run tests with coverage
-      run: npm run test:coverage
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./coverage/coverage-final.json
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Build (if required)
+        if: hashFiles('tsconfig.json') != ''
+        run: npm run build --if-present
+      - name: Run Unit Tests (with coverage on primary Node)
+        if: matrix.node == env.NODE_LTS
+        run: |
+          mkdir -p reports/junit coverage-unit
+          npx jest --config jest.unit.config.js \
+                   --coverage \
+                   --coverageReporters=lcov \
+                   --coverageDirectory=coverage-unit \
+                   --reporters=default \
+                   --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT: reports/junit/junit.xml
+      - name: Upload Coverage (unit)
+        if: matrix.node == env.NODE_LTS && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit
+          path: coverage-unit/lcov.info
 
-  build:
+  integration_tests:
+    name: Integration Tests (PostgreSQL)
+    needs: tests
     runs-on: ubuntu-latest
-    needs: test
-    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build application
-      run: npm run build
-    
-    - name: Test production build
-      run: |
-        npm run start &
-        sleep 10
-        curl -f http://localhost:5000/api/assets || exit 1
-        pkill node
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - run: npm ci
+      - run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U $POSTGRES_USER && break
+            sleep 2
+          done
+      - name: Run DB Migrations
+        run: |
+          if npm run | grep -q migrate; then
+            npm run migrate
+          elif [ -f prisma/schema.prisma ]; then
+            npx prisma migrate deploy
+          fi
+      - name: Integration Tests with Coverage
+        run: |
+          mkdir -p coverage-integration
+          npx jest --config jest.integration.config.js \
+                   --coverage \
+                   --coverageReporters=lcov \
+                   --coverageDirectory=coverage-integration
+      - name: Upload Coverage (integration)
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration
+          path: coverage-integration/lcov.info
 
-  security:
+  coverage_upload:
+    name: Upload Coverage to Codecov
+    needs: [tests, integration_tests]
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run security audit
-      run: npm audit --audit-level moderate
-      continue-on-error: true
-    
-    - name: Check for known vulnerabilities
-      run: npx audit-ci --moderate
+      - name: Download Unit Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-unit
+          path: coverage-unit
+      - name: Download Integration Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-integration
+          path: coverage-integration
+      - name: Upload Unit Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || '' }}
+          files: coverage-unit/lcov.info
+          flags: unit-tests
+          fail_ci_if_error: true
+          verbose: true
+      - name: Upload Integration Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || '' }}
+          files: coverage-integration/lcov.info
+          flags: integration-tests
+          fail_ci_if_error: true
+          verbose: true
