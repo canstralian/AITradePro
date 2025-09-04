@@ -1,8 +1,17 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import { User, JWTPayload } from '../types/auth';
+import { logger } from '../utils/logger';
 
-// Simple authentication check (in production, use proper JWT)
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  logger.error('JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   
@@ -10,12 +19,65 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Authorization header required' });
   }
 
-  // Simple token validation (replace with proper JWT in production)
-  if (authHeader !== 'Bearer aei-trading-token') {
-    return res.status(403).json({ error: 'Invalid token' });
+  if (!authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Invalid authorization format. Use Bearer <token>' });
+  }
+
+  const token = authHeader.substring(7);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    
+    req.user = {
+      id: decoded.userId,
+      username: decoded.username
+    };
+    
+    next();
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Token expired' });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(403).json({ error: 'Invalid token' });
+    } else {
+      return res.status(500).json({ error: 'Token verification failed' });
+    }
+  }
+};
+
+// Utility function to generate JWT tokens
+export const generateToken = (user: User): string => {
+  return jwt.sign(
+    { userId: user.id, username: user.username },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+};
+
+// Optional authentication middleware for public endpoints that can benefit from user context
+export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.substring(7);
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    req.user = {
+      id: decoded.userId,
+      username: decoded.username
+    };
+  } catch (error) {
+    // Ignore errors for optional auth
   }
   
-  (req as any).user = { id: 'user-1', username: 'alexchen' };
   next();
 };
 

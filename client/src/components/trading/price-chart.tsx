@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
@@ -14,25 +14,25 @@ interface PriceChartProps {
 export default function PriceChart({ symbol, price, priceChange, marketData }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState('1D');
 
-  // Generate mock chart data
-  const generateChartData = () => {
+  // Memoize chart data generation to avoid recalculating on every render
+  const chartData = useMemo(() => {
     const data = [];
     const basePrice = parseFloat(price.replace(/,/g, ''));
     const now = new Date();
 
     for (let i = 23; i >= 0; i--) {
       const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-      const variation = (Math.random() - 0.5) * basePrice * 0.02;
+      // Use a more deterministic variation based on time for consistent charts
+      const variation = (Math.sin(i * 0.5) * 0.5) * basePrice * 0.02;
       data.push({
         time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         price: basePrice + variation,
       });
     }
     return data;
-  };
+  }, [price, timeframe]);
 
-  const chartData = generateChartData();
-  const isPositive = parseFloat(priceChange) >= 0;
+  const isPositive = useMemo(() => parseFloat(priceChange) >= 0, [priceChange]);
 
   return (
     <Card className="trading-panel panel-shadow">

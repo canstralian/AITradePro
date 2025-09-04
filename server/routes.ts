@@ -7,6 +7,10 @@ import { aiAnalysisService } from "./services/ai-analysis";
 import { vectorStoreService } from "./services/vector-store";
 import { asyncWorkerService } from "./services/async-workers";
 import { apiRateLimit, tradingRateLimit, securityHeaders, validateSymbol } from "./middleware/auth";
+import { validateSchema, sanitizeInput, schemas } from "./middleware/validation";
+import { helmetMiddleware } from "./middleware/helmet";
+import { logger } from "./utils/logger";
+import { initializeDatabase } from "./services/db-init";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -15,9 +19,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: WebSocket) => {
-    console.log('Client connected to WebSocket');
+    const clientId = Math.random().toString(36).substring(2, 15);
     
-    // Add client to all services
+    // Add client to all services (they handle cleanup internally)
     marketDataService.addClient(ws);
     aiAnalysisService.addClient(ws);
     asyncWorkerService.addClient(ws);
@@ -27,21 +31,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const message = JSON.parse(data.toString());
         
+        // Validate message structure
+        if (!message.type) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            data: { error: 'Message type is required' }
+          }));
+          return;
+        }
+        
         if (message.type === 'ai_query') {
+          if (!message.query || typeof message.query !== 'string') {
+            ws.send(JSON.stringify({
+              type: 'error',
+              data: { error: 'Query must be a non-empty string' }
+            }));
+            return;
+          }
+          
           const response = await aiAnalysisService.processNaturalLanguageQuery(message.query);
           
           // Also perform enhanced RAG analysis
           const ragAnalysis = await vectorStoreService.performRAGAnalysis(message.query, 'BTC');
           
-          ws.send(JSON.stringify({
-            type: 'ai_response',
-            data: {
-              query: message.query,
-              response,
-              ragAnalysis,
-              timestamp: new Date().toISOString(),
-            }
-          }));
+          // Check if WebSocket is still open before sending
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'ai_response',
+              data: {
+                query: message.query,
+                response,
+                ragAnalysis,
+                timestamp: new Date().toISOString(),
+              }
+            }));
+          }
         }
         
         if (message.type === 'enqueue_analysis') {
@@ -51,29 +75,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
             priority: message.priority || 'medium'
           });
           
-          ws.send(JSON.stringify({
-            type: 'task_queued',
-            data: { taskId, status: 'queued' }
-          }));
+          // Check if WebSocket is still open before sending
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'task_queued',
+              data: { taskId, status: 'queued' }
+            }));
+          }
         }
       } catch (error) {
-        console.error('Error processing WebSocket message:', error);
+        // Send error response if WebSocket is still open
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            data: { error: 'Failed to process message' }
+          }));
+        }
       }
     });
 
-    ws.on('close', () => {
-      console.log('Client disconnected from WebSocket');
+    ws.on('error', (error) => {
+      logger.error(`WebSocket error for client ${clientId}`, { error: error.message });
     });
 
-    // Send initial data
-    ws.send(JSON.stringify({
-      type: 'connection_established',
-      data: { timestamp: new Date().toISOString() }
-    }));
+    ws.on('close', () => {
+      // Services handle their own cleanup via the close event listener they set up
+    });
+
+    // Send initial data if WebSocket is open
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'connection_established',
+        data: { 
+          clientId,
+          timestamp: new Date().toISOString() 
+        }
+      }));
+    }
   });
 
   // Apply security middleware to all routes
+  app.use(helmetMiddleware);
   app.use(securityHeaders);
+  app.use('/api', sanitizeInput);
   app.use('/api', apiRateLimit);
 
   // REST API Routes
@@ -84,12 +128,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assets = await storage.getAssets();
       res.json(assets);
     } catch (error) {
+      logger.error('Failed to fetch assets', { error: error instanceof Error ? error.message : error });
       res.status(500).json({ message: "Failed to fetch assets" });
     }
   });
 
   // Get specific asset
-  app.get("/api/assets/:id", validateSymbol, async (req, res) => {
+  app.get("/api/assets/:id", validateSchema(schemas.assetParams), validateSymbol, async (req, res) => {
     try {
       const asset = await storage.getAsset(req.params.id);
       if (!asset) {
@@ -97,38 +142,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(asset);
     } catch (error) {
+      logger.error('Failed to fetch asset', { assetId: req.params.id, error: error instanceof Error ? error.message : error });
       res.status(500).json({ message: "Failed to fetch asset" });
     }
   });
 
   // Get market data for asset
-  app.get("/api/assets/:id/market-data", async (req, res) => {
+  app.get("/api/assets/:id/market-data", validateSymbol, async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 100;
+      const limit = Math.min(parseInt(req.query.limit as string) || 100, 1000); // Cap at 1000
       const marketData = await storage.getMarketData(req.params.id, limit);
       res.json(marketData);
     } catch (error) {
+      logger.error('Failed to fetch market data', { assetId: req.params.id, error: error instanceof Error ? error.message : error });
       res.status(500).json({ message: "Failed to fetch market data" });
     }
   });
 
   // Get user positions
-  app.get("/api/users/:userId/positions", async (req, res) => {
+  app.get("/api/users/:userId/positions", validateSchema(schemas.userParams), async (req, res) => {
     try {
       const positions = await storage.getUserPositions(req.params.userId);
       res.json(positions);
     } catch (error) {
+      logger.error('Failed to fetch positions', { userId: req.params.userId, error: error instanceof Error ? error.message : error });
       res.status(500).json({ message: "Failed to fetch positions" });
     }
   });
 
   // Get user trades
-  app.get("/api/users/:userId/trades", async (req, res) => {
+  app.get("/api/users/:userId/trades", validateSchema(schemas.userParams), async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const trades = await storage.getUserTrades(req.params.userId, limit);
       res.json(trades);
     } catch (error) {
+      logger.error('Failed to fetch trades', { userId: req.params.userId, error: error instanceof Error ? error.message : error });
       res.status(500).json({ message: "Failed to fetch trades" });
     }
   });
@@ -182,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced RAG Analysis endpoint
-  app.get("/api/rag-analysis/:symbol", validateSymbol, async (req, res) => {
+  app.get("/api/rag-analysis/:symbol", validateSchema(schemas.assetParams), validateSymbol, async (req, res) => {
     try {
       const { symbol } = req.params;
       const { query } = req.query;
@@ -213,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enqueue analysis task endpoint
-  app.post("/api/workers/enqueue", async (req, res) => {
+  app.post("/api/workers/enqueue", validateSchema(schemas.workerTask), async (req, res) => {
     try {
       const { type, payload, priority = 'medium' } = req.body;
       
@@ -245,14 +294,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Initialize database with mock data
+  await initializeDatabase();
+
   // Start services
   marketDataService.start();
   aiAnalysisService.start();
 
   // Generate initial historical data for all assets
-  const assets = await storage.getAssets();
-  for (const asset of assets) {
-    await marketDataService.generateHistoricalData(asset.id, 24);
+  try {
+    const assets = await storage.getAssets();
+    for (const asset of assets) {
+      await marketDataService.generateHistoricalData(asset.id, 24);
+    }
+  } catch (error) {
+    logger.warn('Failed to generate historical data', { error: error instanceof Error ? error.message : error });
   }
 
   return httpServer;

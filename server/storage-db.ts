@@ -8,6 +8,7 @@ import {
 } from '../shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { IStorage } from './storage';
+import { logger } from './utils/logger';
 
 export class DatabaseStorage implements IStorage {
   constructor() {
@@ -117,7 +118,7 @@ export class DatabaseStorage implements IStorage {
       await db.insert(newsItems).values(newsData);
 
     } catch (error) {
-      console.error('Error seeding initial data:', error);
+      logger.error('Error seeding initial data', { error: error instanceof Error ? error.message : error });
     }
   }
 

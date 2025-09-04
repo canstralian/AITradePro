@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { corsMiddleware } from "./middleware/cors";
 
 const app = express();
 app.set('trust proxy', true); // Trust proxy for rate limiting
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Security middleware
+app.use(corsMiddleware);
+app.use(express.json({ limit: '10mb' })); // Set reasonable limit
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -40,12 +44,32 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+  app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+    const status = (err as any)?.status || (err as any)?.statusCode || 500;
+    const message = (err as any)?.message || "Internal Server Error";
+    
+    // Log the error with more details
+    log(`Error ${status}: ${message} - ${req.method} ${req.path}`);
+    
+    // Log stack trace in development
+    if (process.env.NODE_ENV === 'development' && (err as any)?.stack) {
+      console.error((err as any).stack);
+    }
+    
+    // Only send response if not already sent
+    if (!res.headersSent) {
+      const response: any = { 
+        message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : message,
+        status
+      };
+      
+      // Include stack trace in development only
+      if (process.env.NODE_ENV === 'development' && (err as any)?.stack) {
+        response.stack = (err as any).stack;
+      }
+      
+      res.status(status).json(response);
+    }
   });
 
   // importantly only setup vite in development and after

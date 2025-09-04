@@ -1,11 +1,34 @@
 import { EventEmitter } from 'events';
 import { storage } from '../storage';
 import { WebSocket } from 'ws';
+import { logger } from '../utils/logger';
+
+interface MarketAnalysisPayload {
+  symbol: string;
+  timeframe?: string;
+}
+
+interface NewsCorrelationPayload {
+  symbol: string;
+  newsItems: Array<{ id: string; title: string; }>;
+}
+
+interface PatternMatchingPayload {
+  symbol: string;
+  priceData: unknown;
+}
+
+interface SentimentAnalysisPayload {
+  symbol: string;
+  sources?: string[];
+}
+
+type TaskPayload = MarketAnalysisPayload | NewsCorrelationPayload | PatternMatchingPayload | SentimentAnalysisPayload;
 
 export interface WorkerTask {
   id: string;
   type: 'market_analysis' | 'news_correlation' | 'pattern_matching' | 'sentiment_analysis';
-  payload: any;
+  payload: TaskPayload;
   priority: 'low' | 'medium' | 'high';
   createdAt: Date;
   retries: number;
@@ -13,7 +36,7 @@ export interface WorkerTask {
 
 export interface WorkerResult {
   taskId: string;
-  result: any;
+  result: unknown;
   duration: number;
   success: boolean;
   error?: string;
@@ -127,7 +150,7 @@ export class AsyncWorkerService extends EventEmitter {
       
       // Process task asynchronously
       this.processTask(worker, task).catch(error => {
-        console.error(`Task ${task.id} failed:`, error);
+        logger.error(`Task ${task.id} failed`, { error: error instanceof Error ? error.message : error });
       });
     }
     
@@ -138,7 +161,7 @@ export class AsyncWorkerService extends EventEmitter {
     const startTime = Date.now();
     
     try {
-      let result: any;
+      let result: unknown;
       
       switch (task.type) {
         case 'market_analysis':
@@ -197,8 +220,8 @@ export class AsyncWorkerService extends EventEmitter {
     this.broadcastWorkerStatus();
   }
 
-  private async performMarketAnalysis(payload: any): Promise<any> {
-    const { symbol, timeframe } = payload;
+  private async performMarketAnalysis(payload: TaskPayload): Promise<unknown> {
+    const { symbol, timeframe } = payload as MarketAnalysisPayload;
     
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
@@ -222,12 +245,12 @@ export class AsyncWorkerService extends EventEmitter {
     };
   }
 
-  private async performNewsCorrelation(payload: any): Promise<any> {
-    const { symbol, newsItems } = payload;
+  private async performNewsCorrelation(payload: TaskPayload): Promise<unknown> {
+    const { symbol, newsItems } = payload as NewsCorrelationPayload;
     
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
     
-    const correlations = newsItems.map((news: any) => ({
+    const correlations = newsItems.map((news) => ({
       newsId: news.id,
       title: news.title,
       correlation: Math.random() * 0.8 + 0.2, // 0.2 to 1.0
@@ -237,13 +260,13 @@ export class AsyncWorkerService extends EventEmitter {
     return {
       symbol,
       correlations,
-      overallSentiment: correlations.reduce((sum: number, c: any) => sum + c.correlation, 0) / correlations.length,
+      overallSentiment: correlations.reduce((sum: number, c) => sum + c.correlation, 0) / correlations.length,
       timestamp: new Date().toISOString()
     };
   }
 
-  private async performPatternMatching(payload: any): Promise<any> {
-    const { symbol, priceData } = payload;
+  private async performPatternMatching(payload: TaskPayload): Promise<unknown> {
+    const { symbol, priceData } = payload as PatternMatchingPayload;
     
     await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
     
@@ -272,8 +295,8 @@ export class AsyncWorkerService extends EventEmitter {
     };
   }
 
-  private async performSentimentAnalysis(payload: any): Promise<any> {
-    const { symbol, sources } = payload;
+  private async performSentimentAnalysis(payload: TaskPayload): Promise<unknown> {
+    const { symbol, sources } = payload as SentimentAnalysisPayload;
     
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
     
