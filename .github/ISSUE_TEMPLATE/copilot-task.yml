@@ -1,0 +1,63 @@
+---
+name: Copilot Task
+description: Create a task for Copilot to work on as a coding agent
+labels: ["copilot-candidate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 👩‍💻 Copilot Coding Agent Issue Template
+        Use this template to create tasks for GitHub Copilot as a coding agent.
+        Copilot is best at **scoped, pattern-based tasks**.
+        Avoid giving it **complex, sensitive, or ambiguous tasks**.
+
+  - type: checkboxes
+    id: task_suitability
+    attributes:
+      label: Task Suitability
+      description: Check all that apply to this issue
+      options:
+        - label: 🔧 Bug fix (self-contained, reproducible, with failing
+            tests or obvious errors)
+        - label: 🎨 UI tweak (labels, layout, accessibility improvements)
+        - label: ✅ Test coverage (unit tests, extending existing tests)
+        - label: 📝 Documentation update (README, comments, API docs)
+        - label: ♿ Accessibility improvement or technical debt cleanup
+        - label: 🚫 This task is complex, security-critical, ambiguous,
+            or a personal learning task (👤 human-only)
+
+  - type: textarea
+    id: task_summary
+    attributes:
+      label: Task Summary
+      description: Short description of what Copilot should do
+      placeholder: "Fix the login form bug that prevents submit when
+        password field is empty"
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define what "done" looks like (tests pass, style
+        followed, docs updated)
+      placeholder: |
+        - Login form accepts empty password and displays validation error
+        - Existing login tests updated and passing
+        - README updated with new usage notes
+
+  - type: textarea
+    id: file_context
+    attributes:
+      label: Relevant Files / Folders
+      description: List the parts of the repo Copilot should work on
+      placeholder: |
+        - src/components/LoginForm.jsx
+        - tests/components/LoginForm.test.js
+
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Any extra guidance, links, or clarifications
+      placeholder: "Follow project linting rules in .eslintrc and ensure
+        accessibility compliance"
