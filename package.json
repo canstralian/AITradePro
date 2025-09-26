@@ -16,7 +16,9 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "audit": "audit-ci --config audit-ci.json"
+    "audit": "audit-ci --config audit-ci.json",
+    "roadmap": "node scripts/roadmap-tracker.js",
+    "roadmap:validate": "node scripts/roadmap-tracker.js validate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
