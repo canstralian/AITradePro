@@ -8,7 +8,6 @@ import { vectorStoreService } from './services/vector-store';
 import { asyncWorkerService } from './services/async-workers';
 import {
   apiRateLimit,
-  tradingRateLimit,
   securityHeaders,
   validateSymbol,
 } from './middleware/auth';
@@ -105,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
           }
         }
-      } catch (error) {
+      } catch {
         // Send error response if WebSocket is still open
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(
@@ -243,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assetId = req.query.assetId as string;
       const insights = await storage.getActiveInsights(assetId);
       res.json(insights);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: 'Failed to fetch insights' });
     }
   });
@@ -254,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 10;
       const news = await storage.getRecentNews(limit);
       res.json(news);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: 'Failed to fetch news' });
     }
   });
@@ -262,7 +261,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get dashboard data (combined endpoint)
   app.get('/api/dashboard', async (req, res) => {
     try {
-      const userId = 'user-1'; // Mock user ID
+      // TODO: Replace with actual user from authentication middleware
+      const userId = (req as any).user?.id || 'user-1';
 
       const [assets, positions, trades, insights, news] = await Promise.all([
         storage.getAssets(),
@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         news,
         user: await storage.getUser(userId),
       });
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: 'Failed to fetch dashboard data' });
     }
   });
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           analysis,
           timestamp: new Date().toISOString(),
         });
-      } catch (error) {
+      } catch {
         res.status(500).json({ message: 'RAG analysis failed' });
       }
     }
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const status = asyncWorkerService.getQueueStatus();
       res.json(status);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: 'Failed to fetch worker status' });
     }
   });
@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         res.json({ taskId, status: 'queued' });
-      } catch (error) {
+      } catch {
         res.status(500).json({ message: 'Failed to enqueue task' });
       }
     }
@@ -353,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json(result);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: 'Failed to fetch task result' });
     }
   });
