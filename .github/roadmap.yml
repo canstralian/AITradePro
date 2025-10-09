@@ -1,0 +1,70 @@
+# AITradePro Roadmap Configuration
+# This file helps track roadmap implementation progress
+
+roadmap:
+  version: "1.0"
+  last_updated: "2024-12-26"
+  
+  quarters:
+    Q4_2025:
+      name: "Foundational Enhancements"
+      start_date: "2025-10-01"
+      end_date: "2025-12-31"
+      focus: "core optimization, live data, UI/UX improvements"
+      completion: 0
+      
+    Q1_2026:
+      name: "Advanced AI Features"
+      start_date: "2026-01-01"
+      end_date: "2026-03-31"
+      focus: "ML integration, RAG enhancement, backtesting"
+      completion: 0
+      
+    Q2_2026:
+      name: "Community & Expansion"
+      start_date: "2026-04-01"
+      end_date: "2026-06-30"
+      focus: "open collaboration, microservices, scaling"
+      completion: 0
+      
+    Q3_2026:
+      name: "Security & Compliance"
+      start_date: "2026-07-01"
+      end_date: "2026-09-30"
+      focus: "enterprise security, regulatory compliance"
+      completion: 0
+      
+    Q4_2026:
+      name: "Future Vision"
+      start_date: "2026-10-01"
+      end_date: "2026-12-31"
+      focus: "multi-asset support, global expansion, monetization"
+      completion: 0
+
+  categories:
+    - backend
+    - frontend
+    - documentation
+    - security
+    - expansion
+    - ai_ml
+    - infrastructure
+    - community
+
+  priorities:
+    - high
+    - medium  
+    - low
+
+  labels:
+    roadmap: "roadmap"
+    quarter_q4_2025: "Q4-2025"
+    quarter_q1_2026: "Q1-2026" 
+    quarter_q2_2026: "Q2-2026"
+    quarter_q3_2026: "Q3-2026"
+    quarter_q4_2026: "Q4-2026"
+    backend: "backend"
+    frontend: "frontend"
+    documentation: "documentation"
+    security: "security"
+    expansion: "expansion"

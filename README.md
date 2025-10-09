@@ -136,7 +136,19 @@ Automated GitHub Actions workflow includes:
 3. Vector store performs RAG analysis for contextual responses
 4. Real-time delivery via WebSocket to connected clients
 
+## 🗺️ Development Roadmap
+
+Check out our comprehensive [Development Roadmap](ROADMAP.md) to see what's planned for AITradePro through 2025-2026:
+
+- **Q4 2025**: Foundational Enhancements (BTC DCA Intelligence, Live Data, UI/UX)
+- **Q1 2026**: Advanced AI Features (Reinforcement Learning, Enhanced RAG, Backtesting)
+- **Q2 2026**: Community & Expansion (Microservices, Kubernetes, Integrations)
+- **Q3 2026**: Security & Compliance (Audits, GDPR, Enterprise Features)
+- **Q4 2026**: Future Vision (Multi-asset Support, Global Expansion, Monetization)
+
 ## 🤝 Contributing
+
+We welcome contributions aligned with our roadmap! See our [Development Roadmap](ROADMAP.md) for priority areas.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -150,6 +162,7 @@ Automated GitHub Actions workflow includes:
 - Follow ESLint configuration
 - Write tests for new features
 - Update documentation as needed
+- Reference roadmap items in PRs when applicable
 
 ## 📄 License
 
