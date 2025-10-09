@@ -1,10 +1,26 @@
 import { db } from './db';
-import { 
-  users, assets, userPositions, trades, aiInsights, newsItems, marketData,
-  type User, type Asset, type Position, type Trade, type AiInsight, type NewsItem,
-  type MarketData, type InsertUser, type InsertAsset,
-  type InsertPosition, type InsertTrade, type InsertAiInsight, type InsertNewsItem,
-  type InsertMarketData
+import {
+  users,
+  assets,
+  userPositions,
+  trades,
+  aiInsights,
+  newsItems,
+  marketData,
+  type User,
+  type Asset,
+  type Position,
+  type Trade,
+  type AiInsight,
+  type NewsItem,
+  type MarketData,
+  type InsertUser,
+  type InsertAsset,
+  type InsertPosition,
+  type InsertTrade,
+  type InsertAiInsight,
+  type InsertNewsItem,
+  type InsertMarketData,
 } from '../shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { IStorage } from './storage';
@@ -24,43 +40,46 @@ export class DatabaseStorage implements IStorage {
       // Seed assets
       const assetData: InsertAsset[] = [
         {
-          id: "btc-bitcoin",
-          symbol: "BTC",
-          name: "Bitcoin",
-          currentPrice: "43247.89",
-          priceChange24h: "2.34",
-          volume24h: "28500000000",
-          marketCap: "847000000000",
+          id: 'btc-bitcoin',
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          currentPrice: '43247.89',
+          priceChange24h: '2.34',
+          volume24h: '28500000000',
+          marketCap: '847000000000',
         },
         {
-          id: "eth-ethereum",
-          symbol: "ETH",
-          name: "Ethereum", 
-          currentPrice: "2847.21",
-          priceChange24h: "1.89",
-          volume24h: "15600000000",
-          marketCap: "342000000000",
+          id: 'eth-ethereum',
+          symbol: 'ETH',
+          name: 'Ethereum',
+          currentPrice: '2847.21',
+          priceChange24h: '1.89',
+          volume24h: '15600000000',
+          marketCap: '342000000000',
         },
         {
-          id: "sol-solana",
-          symbol: "SOL",
-          name: "Solana",
-          currentPrice: "98.45",
-          priceChange24h: "12.4", 
-          volume24h: "2800000000",
-          marketCap: "43000000000",
-        }
+          id: 'sol-solana',
+          symbol: 'SOL',
+          name: 'Solana',
+          currentPrice: '98.45',
+          priceChange24h: '12.4',
+          volume24h: '2800000000',
+          marketCap: '43000000000',
+        },
       ];
 
-      const createdAssets = await db.insert(assets).values(assetData).returning();
+      const createdAssets = await db
+        .insert(assets)
+        .values(assetData)
+        .returning();
 
       // Seed sample user
       const userData: InsertUser = {
-        id: "user-1",
-        username: "alexchen",
-        password: "hashed_password",
-        email: "alex@trading.com",
-        portfolioValue: "127543.21",
+        id: 'user-1',
+        username: 'alexchen',
+        password: 'hashed_password',
+        email: 'alex@trading.com',
+        portfolioValue: '127543.21',
       };
 
       const [user] = await db.insert(users).values(userData).returning();
@@ -68,25 +87,27 @@ export class DatabaseStorage implements IStorage {
       // Seed AI insights
       const insightData: InsertAiInsight[] = [
         {
-          id: "insight-1",
+          id: 'insight-1',
           assetId: createdAssets[0].id,
-          type: "sentiment",
-          title: "Market Sentiment",
-          description: "Strong accumulation detected. Whale activity increased 34% in last 4 hours.",
-          confidence: "89.00",
-          metadata: JSON.stringify({ status: "Bullish" }),
+          type: 'sentiment',
+          title: 'Market Sentiment',
+          description:
+            'Strong accumulation detected. Whale activity increased 34% in last 4 hours.',
+          confidence: '89.00',
+          metadata: JSON.stringify({ status: 'Bullish' }),
           isActive: true,
         },
         {
-          id: "insight-2", 
+          id: 'insight-2',
           assetId: createdAssets[1].id,
-          type: "pattern",
-          title: "Pattern Recognition",
-          description: "Ascending triangle formation detected with 78% historical accuracy.",
-          confidence: "78.00",
-          metadata: JSON.stringify({ pattern: "Ascending Triangle" }),
+          type: 'pattern',
+          title: 'Pattern Recognition',
+          description:
+            'Ascending triangle formation detected with 78% historical accuracy.',
+          confidence: '78.00',
+          metadata: JSON.stringify({ pattern: 'Ascending Triangle' }),
           isActive: true,
-        }
+        },
       ];
 
       await db.insert(aiInsights).values(insightData);
@@ -94,31 +115,34 @@ export class DatabaseStorage implements IStorage {
       // Seed news items
       const newsData: InsertNewsItem[] = [
         {
-          id: "news-1",
-          title: "Bitcoin ETF Approval Signals",
-          summary: "Growing institutional interest as major financial institutions file for Bitcoin ETF approvals.",
-          source: "CryptoNews",
-          url: "https://cryptonews.com/bitcoin-etf-approval",
-          impact: "high",
-          sentiment: "positive",
+          id: 'news-1',
+          title: 'Bitcoin ETF Approval Signals',
+          summary:
+            'Growing institutional interest as major financial institutions file for Bitcoin ETF approvals.',
+          source: 'CryptoNews',
+          url: 'https://cryptonews.com/bitcoin-etf-approval',
+          impact: 'high',
+          sentiment: 'positive',
           publishedAt: new Date(),
         },
         {
-          id: "news-2",
-          title: "Ethereum Layer 2 Adoption Surge",
-          summary: "Layer 2 solutions see record transaction volumes as gas fees remain low.",
-          source: "BlockchainDaily",
-          url: "https://blockchain-daily.com/layer2-adoption",
-          impact: "medium", 
-          sentiment: "positive",
+          id: 'news-2',
+          title: 'Ethereum Layer 2 Adoption Surge',
+          summary:
+            'Layer 2 solutions see record transaction volumes as gas fees remain low.',
+          source: 'BlockchainDaily',
+          url: 'https://blockchain-daily.com/layer2-adoption',
+          impact: 'medium',
+          sentiment: 'positive',
           publishedAt: new Date(),
-        }
+        },
       ];
 
       await db.insert(newsItems).values(newsData);
-
     } catch (error) {
-      logger.error('Error seeding initial data', { error: error instanceof Error ? error.message : error });
+      logger.error('Error seeding initial data', {
+        error: error instanceof Error ? error.message : error,
+      });
     }
   }
 
@@ -129,7 +153,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
     return user || undefined;
   }
 
@@ -149,7 +176,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAssetBySymbol(symbol: string): Promise<Asset | undefined> {
-    const [asset] = await db.select().from(assets).where(eq(assets.symbol, symbol));
+    const [asset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.symbol, symbol));
     return asset || undefined;
   }
 
@@ -158,13 +188,17 @@ export class DatabaseStorage implements IStorage {
     return asset;
   }
 
-  async updateAssetPrice(id: string, price: string, priceChange24h: string): Promise<Asset | undefined> {
+  async updateAssetPrice(
+    id: string,
+    price: string,
+    priceChange24h: string
+  ): Promise<Asset | undefined> {
     const [asset] = await db
       .update(assets)
-      .set({ 
-        currentPrice: price, 
+      .set({
+        currentPrice: price,
         priceChange24h,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(assets.id, id))
       .returning();
@@ -173,15 +207,24 @@ export class DatabaseStorage implements IStorage {
 
   // Positions
   async getUserPositions(userId: string): Promise<Position[]> {
-    return await db.select().from(userPositions).where(eq(userPositions.userId, userId));
+    return await db
+      .select()
+      .from(userPositions)
+      .where(eq(userPositions.userId, userId));
   }
 
   async createPosition(positionData: InsertPosition): Promise<Position> {
-    const [position] = await db.insert(userPositions).values(positionData).returning();
+    const [position] = await db
+      .insert(userPositions)
+      .values(positionData)
+      .returning();
     return position;
   }
 
-  async updatePosition(id: string, updates: Partial<Position>): Promise<Position | undefined> {
+  async updatePosition(
+    id: string,
+    updates: Partial<Position>
+  ): Promise<Position | undefined> {
     const [position] = await db
       .update(userPositions)
       .set({ ...updates, updatedAt: new Date() })
@@ -207,18 +250,28 @@ export class DatabaseStorage implements IStorage {
 
   // AI Insights
   async getActiveInsights(assetId?: string): Promise<AiInsight[]> {
-    const query = db.select().from(aiInsights).where(eq(aiInsights.isActive, true));
-    
+    const query = db
+      .select()
+      .from(aiInsights)
+      .where(eq(aiInsights.isActive, true));
+
     if (assetId) {
-      return await db.select().from(aiInsights)
-        .where(and(eq(aiInsights.isActive, true), eq(aiInsights.assetId, assetId)));
+      return await db
+        .select()
+        .from(aiInsights)
+        .where(
+          and(eq(aiInsights.isActive, true), eq(aiInsights.assetId, assetId))
+        );
     }
-    
+
     return await query.orderBy(desc(aiInsights.createdAt));
   }
 
   async createInsight(insightData: InsertAiInsight): Promise<AiInsight> {
-    const [insight] = await db.insert(aiInsights).values(insightData).returning();
+    const [insight] = await db
+      .insert(aiInsights)
+      .values(insightData)
+      .returning();
     return insight;
   }
 
@@ -247,14 +300,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addMarketData(data: InsertMarketData): Promise<MarketData> {
-    const dataWithId = { 
-      ...data, 
+    const dataWithId = {
+      ...data,
       id: `md-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      timestamp: data.timestamp ?? new Date()
+      timestamp: data.timestamp ?? new Date(),
     };
-    const [marketDataPoint] = await db.insert(marketData).values(dataWithId).returning();
+    const [marketDataPoint] = await db
+      .insert(marketData)
+      .values(dataWithId)
+      .returning();
     return marketDataPoint;
   }
-
-
 }

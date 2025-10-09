@@ -1,7 +1,20 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 import { MarketData } from '@/types/trading';
 
 interface PriceChartProps {
@@ -11,7 +24,12 @@ interface PriceChartProps {
   marketData?: MarketData;
 }
 
-export default function PriceChart({ symbol, price, priceChange, marketData }: PriceChartProps) {
+export default function PriceChart({
+  symbol,
+  price,
+  priceChange,
+  marketData,
+}: PriceChartProps) {
   const [timeframe, setTimeframe] = useState('1D');
 
   // Memoize chart data generation to avoid recalculating on every render
@@ -23,9 +41,12 @@ export default function PriceChart({ symbol, price, priceChange, marketData }: P
     for (let i = 23; i >= 0; i--) {
       const time = new Date(now.getTime() - i * 60 * 60 * 1000);
       // Use a more deterministic variation based on time for consistent charts
-      const variation = (Math.sin(i * 0.5) * 0.5) * basePrice * 0.02;
+      const variation = Math.sin(i * 0.5) * 0.5 * basePrice * 0.02;
       data.push({
-        time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        time: time.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
         price: basePrice + variation,
       });
     }
@@ -53,8 +74,11 @@ export default function PriceChart({ symbol, price, priceChange, marketData }: P
             </Select>
             <div className="text-right">
               <div className="text-2xl font-mono font-bold">${price}</div>
-              <div className={`text-sm ${isPositive ? 'trading-secondary' : 'trading-accent'}`}>
-                {isPositive ? '+' : ''}{priceChange}%
+              <div
+                className={`text-sm ${isPositive ? 'trading-secondary' : 'trading-accent'}`}
+              >
+                {isPositive ? '+' : ''}
+                {priceChange}%
               </div>
             </div>
           </div>
@@ -64,23 +88,24 @@ export default function PriceChart({ symbol, price, priceChange, marketData }: P
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <XAxis 
-                dataKey="time" 
+              <XAxis
+                dataKey="time"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: 'hsl(215, 20%, 65%)', fontSize: 12 }}
               />
-              <YAxis 
-                hide
-              />
-              <Tooltip 
+              <YAxis hide />
+              <Tooltip
                 contentStyle={{
                   backgroundColor: 'hsl(217, 33%, 17%)',
                   border: '1px solid hsl(217, 33%, 33%)',
                   borderRadius: '8px',
-                  color: 'hsl(210, 40%, 98%)'
+                  color: 'hsl(210, 40%, 98%)',
                 }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Price']}
+                formatter={(value: number) => [
+                  `$${value.toLocaleString()}`,
+                  'Price',
+                ]}
               />
               <Line
                 type="monotone"
@@ -90,7 +115,7 @@ export default function PriceChart({ symbol, price, priceChange, marketData }: P
                 dot={false}
                 activeDot={{
                   r: 4,
-                  fill: isPositive ? 'hsl(158, 64%, 52%)' : 'hsl(0, 84%, 60%)'
+                  fill: isPositive ? 'hsl(158, 64%, 52%)' : 'hsl(0, 84%, 60%)',
                 }}
               />
             </LineChart>

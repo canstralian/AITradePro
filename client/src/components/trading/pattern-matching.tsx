@@ -36,7 +36,7 @@ export default function PatternMatching() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {patterns.map((pattern) => (
+          {patterns.map(pattern => (
             <div key={pattern.id} className="trading-bg rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">{pattern.title}</span>
@@ -52,7 +52,9 @@ export default function PatternMatching() {
                 </div>
                 <div className="flex justify-between">
                   <span>Gain:</span>
-                  <span className="font-mono trading-secondary">{pattern.gain}</span>
+                  <span className="font-mono trading-secondary">
+                    {pattern.gain}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Confidence:</span>

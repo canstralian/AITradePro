@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock WebSocket for tests
 global.WebSocket = vi.fn(() => ({
@@ -8,7 +8,7 @@ global.WebSocket = vi.fn(() => ({
   send: vi.fn(),
   close: vi.fn(),
   readyState: 1,
-})) as any
+})) as any;
 
 // Mock matchMedia for responsive components
 Object.defineProperty(window, 'matchMedia', {
@@ -23,4 +23,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});

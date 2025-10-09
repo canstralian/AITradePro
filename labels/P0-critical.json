@@ -1,1 +1,5 @@
-{"name":"P0-critical","color":"d73a4a","description":"Blocks production deployment - immediate action required"}
+{
+  "name": "P0-critical",
+  "color": "d73a4a",
+  "description": "Blocks production deployment - immediate action required"
+}

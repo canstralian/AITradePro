@@ -1,7 +1,7 @@
-import { 
-  type User, 
-  type InsertUser, 
-  type Asset, 
+import {
+  type User,
+  type InsertUser,
+  type Asset,
   type InsertAsset,
   type Position,
   type InsertPosition,
@@ -12,40 +12,47 @@ import {
   type NewsItem,
   type InsertNewsItem,
   type MarketData,
-  type InsertMarketData
-} from "@shared/schema";
-import { randomUUID } from "crypto";
+  type InsertMarketData,
+} from '@shared/schema';
+import { randomUUID } from 'crypto';
 
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Assets
   getAssets(): Promise<Asset[]>;
   getAsset(id: string): Promise<Asset | undefined>;
   getAssetBySymbol(symbol: string): Promise<Asset | undefined>;
   createAsset(asset: InsertAsset): Promise<Asset>;
-  updateAssetPrice(id: string, price: string, priceChange24h: string): Promise<Asset | undefined>;
-  
+  updateAssetPrice(
+    id: string,
+    price: string,
+    priceChange24h: string
+  ): Promise<Asset | undefined>;
+
   // Positions
   getUserPositions(userId: string): Promise<Position[]>;
   createPosition(position: InsertPosition): Promise<Position>;
-  updatePosition(id: string, updates: Partial<Position>): Promise<Position | undefined>;
-  
+  updatePosition(
+    id: string,
+    updates: Partial<Position>
+  ): Promise<Position | undefined>;
+
   // Trades
   getUserTrades(userId: string, limit?: number): Promise<Trade[]>;
   createTrade(trade: InsertTrade): Promise<Trade>;
-  
+
   // AI Insights
   getActiveInsights(assetId?: string): Promise<AiInsight[]>;
   createInsight(insight: InsertAiInsight): Promise<AiInsight>;
-  
+
   // News
   getRecentNews(limit?: number): Promise<NewsItem[]>;
   createNewsItem(newsItem: InsertNewsItem): Promise<NewsItem>;
-  
+
   // Market Data
   getMarketData(assetId: string, limit?: number): Promise<MarketData[]>;
   addMarketData(data: InsertMarketData): Promise<MarketData>;
@@ -68,34 +75,34 @@ export class MemStorage implements IStorage {
     // Initialize sample assets
     const btc: Asset = {
       id: randomUUID(),
-      symbol: "BTC",
-      name: "Bitcoin",
-      currentPrice: "43247.89",
-      priceChange24h: "2.34",
-      volume24h: "28500000000",
-      marketCap: "847000000000",
+      symbol: 'BTC',
+      name: 'Bitcoin',
+      currentPrice: '43247.89',
+      priceChange24h: '2.34',
+      volume24h: '28500000000',
+      marketCap: '847000000000',
       updatedAt: new Date(),
     };
-    
+
     const eth: Asset = {
       id: randomUUID(),
-      symbol: "ETH", 
-      name: "Ethereum",
-      currentPrice: "2847.21",
-      priceChange24h: "1.89",
-      volume24h: "15600000000",
-      marketCap: "342000000000",
+      symbol: 'ETH',
+      name: 'Ethereum',
+      currentPrice: '2847.21',
+      priceChange24h: '1.89',
+      volume24h: '15600000000',
+      marketCap: '342000000000',
       updatedAt: new Date(),
     };
 
     const sol: Asset = {
       id: randomUUID(),
-      symbol: "SOL",
-      name: "Solana", 
-      currentPrice: "98.45",
-      priceChange24h: "12.4",
-      volume24h: "2800000000",
-      marketCap: "43000000000",
+      symbol: 'SOL',
+      name: 'Solana',
+      currentPrice: '98.45',
+      priceChange24h: '12.4',
+      volume24h: '2800000000',
+      marketCap: '43000000000',
       updatedAt: new Date(),
     };
 
@@ -105,11 +112,11 @@ export class MemStorage implements IStorage {
 
     // Initialize sample user
     const user: User = {
-      id: "user-1",
-      username: "alexchen",
-      password: "hashed_password",
-      email: "alex@trading.com",
-      portfolioValue: "127543.21",
+      id: 'user-1',
+      username: 'alexchen',
+      password: 'hashed_password',
+      email: 'alex@trading.com',
+      portfolioValue: '127543.21',
       createdAt: new Date(),
     };
     this.users.set(user.id, user);
@@ -118,11 +125,12 @@ export class MemStorage implements IStorage {
     const insight1: AiInsight = {
       id: randomUUID(),
       assetId: btc.id,
-      type: "sentiment",
-      title: "Market Sentiment",
-      description: "Strong accumulation detected. Whale activity increased 34% in last 4 hours.",
-      confidence: "89.00",
-      metadata: JSON.stringify({ status: "Bullish" }),
+      type: 'sentiment',
+      title: 'Market Sentiment',
+      description:
+        'Strong accumulation detected. Whale activity increased 34% in last 4 hours.',
+      confidence: '89.00',
+      metadata: JSON.stringify({ status: 'Bullish' }),
       isActive: true,
       createdAt: new Date(),
     };
@@ -132,12 +140,13 @@ export class MemStorage implements IStorage {
     // Initialize sample news
     const news1: NewsItem = {
       id: randomUUID(),
-      title: "Bitcoin ETF Approval Expected Soon",
-      summary: "Market analysts predict potential approval could drive BTC to new highs...",
-      source: "CoinDesk", 
-      url: "https://coindesk.com/bitcoin-etf-approval",
-      impact: "high",
-      sentiment: "positive",
+      title: 'Bitcoin ETF Approval Expected Soon',
+      summary:
+        'Market analysts predict potential approval could drive BTC to new highs...',
+      source: 'CoinDesk',
+      url: 'https://coindesk.com/bitcoin-etf-approval',
+      impact: 'high',
+      sentiment: 'positive',
       publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       createdAt: new Date(),
     };
@@ -150,14 +159,16 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    return Array.from(this.users.values()).find(
+      user => user.username === username
+    );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
+    const user: User = {
       ...insertUser,
-      portfolioValue: insertUser.portfolioValue ?? "0", 
+      portfolioValue: insertUser.portfolioValue ?? '0',
       id,
       createdAt: new Date(),
     };
@@ -174,16 +185,18 @@ export class MemStorage implements IStorage {
   }
 
   async getAssetBySymbol(symbol: string): Promise<Asset | undefined> {
-    return Array.from(this.assets.values()).find(asset => asset.symbol === symbol);
+    return Array.from(this.assets.values()).find(
+      asset => asset.symbol === symbol
+    );
   }
 
   async createAsset(insertAsset: InsertAsset): Promise<Asset> {
     const id = randomUUID();
     const asset: Asset = {
       ...insertAsset,
-      priceChange24h: insertAsset.priceChange24h ?? "0",
-      volume24h: insertAsset.volume24h ?? "0", 
-      marketCap: insertAsset.marketCap ?? "0",
+      priceChange24h: insertAsset.priceChange24h ?? '0',
+      volume24h: insertAsset.volume24h ?? '0',
+      marketCap: insertAsset.marketCap ?? '0',
       id,
       updatedAt: new Date(),
     };
@@ -191,10 +204,14 @@ export class MemStorage implements IStorage {
     return asset;
   }
 
-  async updateAssetPrice(id: string, price: string, priceChange24h: string): Promise<Asset | undefined> {
+  async updateAssetPrice(
+    id: string,
+    price: string,
+    priceChange24h: string
+  ): Promise<Asset | undefined> {
     const asset = this.assets.get(id);
     if (!asset) return undefined;
-    
+
     const updatedAsset = {
       ...asset,
       currentPrice: price,
@@ -206,7 +223,9 @@ export class MemStorage implements IStorage {
   }
 
   async getUserPositions(userId: string): Promise<Position[]> {
-    return Array.from(this.positions.values()).filter(position => position.userId === userId);
+    return Array.from(this.positions.values()).filter(
+      position => position.userId === userId
+    );
   }
 
   async createPosition(insertPosition: InsertPosition): Promise<Position> {
@@ -221,10 +240,13 @@ export class MemStorage implements IStorage {
     return position;
   }
 
-  async updatePosition(id: string, updates: Partial<Position>): Promise<Position | undefined> {
+  async updatePosition(
+    id: string,
+    updates: Partial<Position>
+  ): Promise<Position | undefined> {
     const position = this.positions.get(id);
     if (!position) return undefined;
-    
+
     const updatedPosition = {
       ...position,
       ...updates,
@@ -245,7 +267,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const trade: Trade = {
       ...insertTrade,
-      status: insertTrade.status ?? "completed",
+      status: insertTrade.status ?? 'completed',
       id,
       timestamp: new Date(),
     };
@@ -255,7 +277,9 @@ export class MemStorage implements IStorage {
 
   async getActiveInsights(assetId?: string): Promise<AiInsight[]> {
     return Array.from(this.aiInsights.values())
-      .filter(insight => insight.isActive && (!assetId || insight.assetId === assetId))
+      .filter(
+        insight => insight.isActive && (!assetId || insight.assetId === assetId)
+      )
       .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
   }
 
@@ -310,8 +334,6 @@ export class MemStorage implements IStorage {
     this.marketData.set(id, data);
     return data;
   }
-
-
 }
 
 import { DatabaseStorage } from './storage-db';

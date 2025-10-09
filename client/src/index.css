@@ -23,7 +23,7 @@
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(217, 91%, 60%);
   --radius: 0.5rem;
-  
+
   /* Trading specific colors */
   --trading-primary: hsl(217, 91%, 60%);
   --trading-secondary: hsl(158, 64%, 52%);
@@ -74,37 +74,39 @@
   .trading-primary {
     color: hsl(217, 91%, 60%);
   }
-  
+
   .trading-secondary {
     color: hsl(158, 64%, 52%);
   }
-  
+
   .trading-accent {
     color: hsl(0, 84%, 60%);
   }
-  
+
   .trading-bg {
     background-color: hsl(222, 84%, 5%);
   }
-  
+
   .trading-panel {
     background-color: hsl(217, 33%, 17%);
   }
-  
+
   .trading-text {
     color: hsl(210, 40%, 98%);
   }
-  
+
   .trading-border {
     border-color: hsl(217, 33%, 33%);
   }
-  
+
   .trading-muted {
     color: hsl(215, 20%, 65%);
   }
 
   .panel-shadow {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 
   .glow-green {
@@ -142,36 +144,36 @@
     .mobile-compact {
       padding: 0.5rem;
     }
-    
+
     .mobile-text-sm {
       font-size: 0.75rem;
     }
-    
+
     .mobile-spacing-tight {
       gap: 0.5rem;
     }
-    
+
     .mobile-card {
       padding: 0.75rem;
     }
-    
+
     .mobile-hide {
       display: none;
     }
-    
+
     /* Touch-friendly sizing */
     .mobile-touch {
       min-height: 44px;
       min-width: 44px;
     }
-    
+
     /* Improved scrolling on mobile */
     .mobile-scroll {
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
-    
+
     .mobile-scroll::-webkit-scrollbar {
       display: none;
     }

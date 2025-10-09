@@ -25,21 +25,28 @@ export default function SystemStatus() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {systemServices.map((service) => (
-            <div key={service.name} className="flex justify-between items-center">
+          {systemServices.map(service => (
+            <div
+              key={service.name}
+              className="flex justify-between items-center"
+            >
               <span className="text-sm">{service.name}</span>
               <div className="flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-2 animate-pulse`} 
-                     style={{ backgroundColor: 'hsl(158, 64%, 52%)' }}></div>
-                <span className="text-xs trading-secondary">{service.status}</span>
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 animate-pulse`}
+                  style={{ backgroundColor: 'hsl(158, 64%, 52%)' }}
+                ></div>
+                <span className="text-xs trading-secondary">
+                  {service.status}
+                </span>
               </div>
             </div>
           ))}
-          
+
           <div className="border-t border-trading-border pt-3 mt-4">
             <div className="text-sm font-medium mb-2">Processing Queue</div>
             <div className="text-xs space-y-1">
-              {queueItems.map((item) => (
+              {queueItems.map(item => (
                 <div key={item.name} className="flex justify-between">
                   <span>{item.name}</span>
                   <span className="trading-muted">{item.pending} pending</span>

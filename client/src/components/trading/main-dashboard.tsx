@@ -21,19 +21,19 @@ interface MainDashboardProps {
   realtimeInsights: AIInsight[];
 }
 
-export default function MainDashboard({ 
-  dashboardData, 
-  marketData, 
-  realtimeInsights 
+export default function MainDashboard({
+  dashboardData,
+  marketData,
+  realtimeInsights,
 }: MainDashboardProps) {
   const isMobile = useIsMobile();
-  const portfolioValue = "127,543.21";
-  const pnl24h = "+3,247.89";
+  const portfolioValue = '127,543.21';
+  const pnl24h = '+3,247.89';
   const activePositions = dashboardData?.positions?.length || 12;
-  const aiConfidence = "87";
+  const aiConfidence = '87';
 
-  const btcPrice = marketData.BTC?.price || "43,247.89";
-  const btcChange = marketData.BTC?.priceChange24h || "2.34";
+  const btcPrice = marketData.BTC?.price || '43,247.89';
+  const btcChange = marketData.BTC?.priceChange24h || '2.34';
 
   return (
     <main className="flex-1 p-4 overflow-y-auto scrollbar-thin">
@@ -44,7 +44,9 @@ export default function MainDashboard({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm trading-muted">Portfolio Value</p>
-                <p className="text-2xl font-bold font-mono">${portfolioValue}</p>
+                <p className="text-2xl font-bold font-mono">
+                  ${portfolioValue}
+                </p>
                 <p className="text-sm trading-secondary">+$2,431.05 (1.94%)</p>
               </div>
               <TrendingUp className="text-trading-secondary w-8 h-8" />
@@ -57,7 +59,9 @@ export default function MainDashboard({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm trading-muted">24h P&L</p>
-                <p className="text-2xl font-bold font-mono trading-secondary">${pnl24h}</p>
+                <p className="text-2xl font-bold font-mono trading-secondary">
+                  ${pnl24h}
+                </p>
                 <p className="text-sm trading-secondary">+2.6%</p>
               </div>
               <BarChart3 className="text-trading-secondary w-8 h-8" />
@@ -70,7 +74,9 @@ export default function MainDashboard({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm trading-muted">Active Positions</p>
-                <p className="text-2xl font-bold font-mono">{activePositions}</p>
+                <p className="text-2xl font-bold font-mono">
+                  {activePositions}
+                </p>
                 <p className="text-sm trading-muted">Across 8 assets</p>
               </div>
               <TrendingUp className="text-trading-primary w-8 h-8" />
@@ -96,7 +102,7 @@ export default function MainDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
         {/* Price Chart - spans 2 columns */}
         <div className="lg:col-span-2">
-          <PriceChart 
+          <PriceChart
             symbol="BTC/USD"
             price={btcPrice}
             priceChange={btcChange}
@@ -105,8 +111,11 @@ export default function MainDashboard({
         </div>
 
         {/* AI Insights */}
-        <AIInsights 
-          insights={[...realtimeInsights, ...(dashboardData?.insights || [])].slice(0, 3)} 
+        <AIInsights
+          insights={[
+            ...realtimeInsights,
+            ...(dashboardData?.insights || []),
+          ].slice(0, 3)}
         />
 
         {/* Order Book */}

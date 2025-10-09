@@ -10,9 +10,9 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) return;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
@@ -27,15 +27,15 @@ export function useWebSocket() {
       setTimeout(connect, 3000);
     };
 
-    ws.current.onerror = (error) => {
+    ws.current.onerror = error => {
       console.error('WebSocket error:', error);
     };
 
-    ws.current.onmessage = (event) => {
+    ws.current.onmessage = event => {
       try {
         const message: WebSocketMessage = JSON.parse(event.data);
         setLastMessage(message);
-        
+
         // Call registered handler for this message type
         const handler = messageHandlers.current.get(message.type);
         if (handler) {
@@ -60,13 +60,16 @@ export function useWebSocket() {
     }
   }, []);
 
-  const subscribe = useCallback((messageType: string, handler: (data: any) => void) => {
-    messageHandlers.current.set(messageType, handler);
-    
-    return () => {
-      messageHandlers.current.delete(messageType);
-    };
-  }, []);
+  const subscribe = useCallback(
+    (messageType: string, handler: (data: any) => void) => {
+      messageHandlers.current.set(messageType, handler);
+
+      return () => {
+        messageHandlers.current.delete(messageType);
+      };
+    },
+    []
+  );
 
   useEffect(() => {
     connect();

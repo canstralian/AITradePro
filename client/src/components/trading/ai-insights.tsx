@@ -26,16 +26,18 @@ export default function AIInsights({ insights }: AIInsightsProps) {
       id: '1',
       type: 'sentiment' as const,
       title: 'Market Sentiment',
-      description: 'Strong accumulation detected. Whale activity increased 34% in last 4 hours.',
+      description:
+        'Strong accumulation detected. Whale activity increased 34% in last 4 hours.',
       confidence: '89',
       metadata: { status: 'Bullish' },
       timestamp: new Date().toISOString(),
     },
     {
-      id: '2', 
+      id: '2',
       type: 'pattern' as const,
       title: 'Pattern Match',
-      description: 'Similar to Oct 2020 breakout pattern. Expected target: $48,500',
+      description:
+        'Similar to Oct 2020 breakout pattern. Expected target: $48,500',
       confidence: '92',
       metadata: { similarity: '89%' },
       timestamp: new Date().toISOString(),
@@ -48,7 +50,7 @@ export default function AIInsights({ insights }: AIInsightsProps) {
       confidence: '76',
       metadata: { impact: 'Medium' },
       timestamp: new Date().toISOString(),
-    }
+    },
   ];
 
   const displayInsights = insights.length > 0 ? insights : defaultInsights;
@@ -64,11 +66,14 @@ export default function AIInsights({ insights }: AIInsightsProps) {
       <CardContent>
         <div className="space-y-4">
           {displayInsights.map((insight, index) => (
-            <div key={`insight-${index}-${insight.timestamp}`} className="trading-bg rounded-lg p-3">
+            <div
+              key={`insight-${index}-${insight.timestamp}`}
+              className="trading-bg rounded-lg p-3"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">{insight.title}</span>
                 <div className="flex items-center space-x-2">
-                  <Badge 
+                  <Badge
                     variant={getInsightBadgeVariant(insight.type)}
                     className="text-xs"
                   >

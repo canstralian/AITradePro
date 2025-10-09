@@ -20,34 +20,26 @@ afterAll(async () => {
 describe('API Routes', () => {
   describe('GET /api/assets', () => {
     it('should return assets', async () => {
-      const response = await request(app)
-        .get('/api/assets')
-        .expect(200);
-      
+      const response = await request(app).get('/api/assets').expect(200);
+
       expect(response.body).toBeInstanceOf(Array);
     });
   });
 
   describe('GET /api/assets/:id', () => {
     it('should return 404 for invalid asset', async () => {
-      await request(app)
-        .get('/api/assets/INVALID')
-        .expect(400); // Due to symbol validation
+      await request(app).get('/api/assets/INVALID').expect(400); // Due to symbol validation
     });
 
     it('should accept valid crypto symbols', async () => {
-      const response = await request(app)
-        .get('/api/assets/BTC')
-        .expect(200);
+      const response = await request(app).get('/api/assets/BTC').expect(200);
     });
   });
 
   describe('GET /api/dashboard', () => {
     it('should return dashboard data', async () => {
-      const response = await request(app)
-        .get('/api/dashboard')
-        .expect(200);
-      
+      const response = await request(app).get('/api/dashboard').expect(200);
+
       expect(response.body).toHaveProperty('assets');
       expect(response.body).toHaveProperty('positions');
       expect(response.body).toHaveProperty('trades');
@@ -61,7 +53,7 @@ describe('API Routes', () => {
       const response = await request(app)
         .get('/api/workers/status')
         .expect(200);
-      
+
       expect(response.body).toHaveProperty('queueLength');
       expect(response.body).toHaveProperty('activeWorkers');
       expect(response.body).toHaveProperty('totalWorkers');
@@ -73,14 +65,14 @@ describe('API Routes', () => {
       const taskData = {
         type: 'market_analysis',
         payload: { symbol: 'BTC' },
-        priority: 'high'
+        priority: 'high',
       };
 
       const response = await request(app)
         .post('/api/workers/enqueue')
         .send(taskData)
         .expect(200);
-      
+
       expect(response.body).toHaveProperty('taskId');
       expect(response.body.status).toBe('queued');
     });
@@ -88,7 +80,7 @@ describe('API Routes', () => {
     it('should reject invalid task type', async () => {
       const taskData = {
         type: 'invalid_type',
-        payload: { symbol: 'BTC' }
+        payload: { symbol: 'BTC' },
       };
 
       await request(app)

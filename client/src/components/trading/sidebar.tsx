@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { MarketData, AIInsight } from '@/types/trading';
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SidebarProps {
   onAIQuery: (query: string) => void;
@@ -13,30 +13,38 @@ interface SidebarProps {
   insights: AIInsight[];
 }
 
-export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProps) {
+export default function Sidebar({
+  onAIQuery,
+  marketData,
+  insights,
+}: SidebarProps) {
   const [queryInput, setQueryInput] = useState('');
   const [conversation, setConversation] = useState([
     {
       type: 'ai',
-      message: 'Based on current market sentiment and on-chain data, Bitcoin shows strong accumulation patterns similar to Q4 2020. Correlation with tech stocks has decreased 15% this week.',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000)
+      message:
+        'Based on current market sentiment and on-chain data, Bitcoin shows strong accumulation patterns similar to Q4 2020. Correlation with tech stocks has decreased 15% this week.',
+      timestamp: new Date(Date.now() - 5 * 60 * 1000),
     },
     {
-      type: 'user', 
+      type: 'user',
       message: "What's driving the current Bitcoin price movement?",
-      timestamp: new Date(Date.now() - 6 * 60 * 1000)
-    }
+      timestamp: new Date(Date.now() - 6 * 60 * 1000),
+    },
   ]);
 
   const handleQuerySubmit = () => {
     if (!queryInput.trim()) return;
 
     // Add user message to conversation
-    setConversation(prev => [{
-      type: 'user',
-      message: queryInput,
-      timestamp: new Date()
-    }, ...prev]);
+    setConversation(prev => [
+      {
+        type: 'user',
+        message: queryInput,
+        timestamp: new Date(),
+      },
+      ...prev,
+    ]);
 
     // Send query to AI
     onAIQuery(queryInput);
@@ -49,10 +57,12 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
     { symbol: 'LUNA', change: '-5.2%', positive: false },
   ];
 
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
-    <aside className={`trading-panel border-r trading-border p-4 overflow-y-auto scrollbar-thin ${isMobile ? 'w-full' : 'w-80'}`}>
+    <aside
+      className={`trading-panel border-r trading-border p-4 overflow-y-auto scrollbar-thin ${isMobile ? 'w-full' : 'w-80'}`}
+    >
       {/* AI Assistant */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -65,12 +75,12 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
             <div className="flex items-center space-x-2 mb-3">
               <Input
                 value={queryInput}
-                onChange={(e) => setQueryInput(e.target.value)}
+                onChange={e => setQueryInput(e.target.value)}
                 placeholder="Ask about market trends, patterns, or specific assets..."
                 className="flex-1 trading-panel border-trading-border"
-                onKeyPress={(e) => e.key === 'Enter' && handleQuerySubmit()}
+                onKeyPress={e => e.key === 'Enter' && handleQuerySubmit()}
               />
-              <Button 
+              <Button
                 onClick={handleQuerySubmit}
                 size="sm"
                 className="bg-trading-primary hover:bg-blue-700"
@@ -82,7 +92,7 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
             {/* AI Conversation */}
             <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
               {conversation.map((item, index) => (
-                <div 
+                <div
                   key={index}
                   className={`${item.type === 'ai' ? 'trading-panel' : 'trading-bg'} rounded-lg p-3`}
                 >
@@ -113,7 +123,10 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
             <BarChart3 className="w-4 h-4 mr-2" />
             Analyze
           </Button>
-          <Button variant="outline" className="trading-panel border-trading-border">
+          <Button
+            variant="outline"
+            className="trading-panel border-trading-border"
+          >
             <Bell className="w-4 h-4 mr-2" />
             Alerts
           </Button>
@@ -139,10 +152,14 @@ export default function Sidebar({ onAIQuery, marketData, insights }: SidebarProp
             <CardContent className="p-3">
               <div className="text-sm font-medium mb-2">Top Movers</div>
               <div className="space-y-2 text-xs">
-                {topMovers.map((mover) => (
+                {topMovers.map(mover => (
                   <div key={mover.symbol} className="flex justify-between">
                     <span>{mover.symbol}</span>
-                    <span className={mover.positive ? 'trading-secondary' : 'trading-accent'}>
+                    <span
+                      className={
+                        mover.positive ? 'trading-secondary' : 'trading-accent'
+                      }
+                    >
                       {mover.change}
                     </span>
                   </div>

@@ -43,7 +43,10 @@ export default function OrderBook({ symbol }: OrderBookProps) {
             <div className="text-sm trading-muted mb-2 font-medium">Bids</div>
             <div className="space-y-1">
               {bids.slice(0, 6).map((bid, index) => (
-                <div key={index} className="flex justify-between text-xs font-mono">
+                <div
+                  key={index}
+                  className="flex justify-between text-xs font-mono"
+                >
                   <span className="trading-secondary">{bid.price}</span>
                   <span className="trading-muted">{bid.quantity}</span>
                 </div>
@@ -54,7 +57,10 @@ export default function OrderBook({ symbol }: OrderBookProps) {
             <div className="text-sm trading-muted mb-2 font-medium">Asks</div>
             <div className="space-y-1">
               {asks.slice(0, 6).map((ask, index) => (
-                <div key={index} className="flex justify-between text-xs font-mono">
+                <div
+                  key={index}
+                  className="flex justify-between text-xs font-mono"
+                >
                   <span className="trading-accent">{ask.price}</span>
                   <span className="trading-muted">{ask.quantity}</span>
                 </div>

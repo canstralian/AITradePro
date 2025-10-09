@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Log error to monitoring service
@@ -47,9 +47,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.state.error?.message || 'An unexpected error occurred'}
               </AlertDescription>
             </Alert>
-            
-            <Button 
-              onClick={this.handleReset} 
+
+            <Button
+              onClick={this.handleReset}
               className="mt-4 w-full"
               variant="outline"
             >
@@ -58,7 +58,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
               <details className="mt-4 text-sm text-gray-600">
-                <summary className="cursor-pointer">Error Details (Development)</summary>
+                <summary className="cursor-pointer">
+                  Error Details (Development)
+                </summary>
                 <pre className="mt-2 whitespace-pre-wrap">
                   {this.state.error?.stack}
                   {this.state.errorInfo.componentStack}

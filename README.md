@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
+
 A sophisticated AI-Enhanced trading analysis platform built with modern full-stack architecture. Features real-time market data processing, AI-powered analysis with RAG technology, and Bloomberg Terminal-inspired interface.
 
 ## 🚀 Features
@@ -21,6 +22,7 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 ## 🛠️ Tech Stack
 
 **Frontend:**
+
 - React 18 with TypeScript
 - Tailwind CSS + Shadcn/ui components
 - TanStack Query for state management
@@ -28,12 +30,14 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 - Recharts for data visualization
 
 **Backend:**
+
 - Node.js with Express.js
 - TypeScript with ES modules
 - WebSocket server for real-time data
 - PostgreSQL with Drizzle ORM
 
 **Testing & Quality:**
+
 - Vitest for unit testing
 - Testing Library for React components
 - ESLint + Prettier for code quality
@@ -44,30 +48,34 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/ai-trading-platform.git
    cd ai-trading-platform
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Setup environment variables**
+
    ```bash
    # Required: PostgreSQL connection string
    DATABASE_URL=postgresql://username:password@localhost:5432/trading_db
    ```
 
 4. **Setup database**
+
    ```bash
    npm run db:push
    ```
@@ -125,12 +133,14 @@ Automated GitHub Actions workflow includes:
 ## 📊 Architecture
 
 ### Real-time Data Flow
+
 1. Market data service generates realistic price movements
 2. Data stored in PostgreSQL with timestamp indexing
 3. WebSocket server broadcasts updates to connected clients
 4. React components receive and display live updates
 
 ### AI Analysis Pipeline
+
 1. Automated analysis triggers based on market conditions
 2. AI service creates sentiment, pattern, and news-based insights
 3. Vector store performs RAG analysis for contextual responses

@@ -14,11 +14,15 @@ export interface AIQueryMessage extends WebSocketMessage {
 
 export interface EnqueueAnalysisMessage extends WebSocketMessage {
   type: 'enqueue_analysis';
-  analysisType: 'market_analysis' | 'news_correlation' | 'pattern_matching' | 'sentiment_analysis';
+  analysisType:
+    | 'market_analysis'
+    | 'news_correlation'
+    | 'pattern_matching'
+    | 'sentiment_analysis';
   payload: {
     symbol?: string;
     timeframe?: string;
-    newsItems?: Array<{ id: string; title: string; }>;
+    newsItems?: Array<{ id: string; title: string }>;
     priceData?: unknown;
     sources?: string[];
   };
@@ -26,7 +30,13 @@ export interface EnqueueAnalysisMessage extends WebSocketMessage {
 }
 
 export interface WebSocketResponse {
-  type: 'ai_response' | 'task_queued' | 'error' | 'connection_established' | 'worker_status' | 'worker_result';
+  type:
+    | 'ai_response'
+    | 'task_queued'
+    | 'error'
+    | 'connection_established'
+    | 'worker_status'
+    | 'worker_result';
   data: {
     error?: string;
     clientId?: string;

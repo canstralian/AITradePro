@@ -5,6 +5,7 @@ This document provides comprehensive testing guidelines for the AI Trading Platf
 ## 🧪 Test Framework
 
 We use **Vitest** as our primary testing framework, chosen for its:
+
 - Native TypeScript support
 - Fast execution with ES modules
 - Built-in coverage reporting
@@ -43,6 +44,7 @@ npm run test:ui
 ### Coverage Reports
 
 Coverage reports are generated in the `coverage/` directory:
+
 - `coverage/index.html` - Visual coverage report
 - `coverage/coverage-final.json` - JSON coverage data
 
@@ -66,21 +68,21 @@ describe('MyComponent', () => {
 ### Backend Service Tests
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
-import { MyService } from '../services/MyService'
+import { describe, it, expect, beforeEach } from 'vitest';
+import { MyService } from '../services/MyService';
 
 describe('MyService', () => {
-  let service: MyService
+  let service: MyService;
 
   beforeEach(() => {
-    service = new MyService()
-  })
+    service = new MyService();
+  });
 
   it('performs expected operation', async () => {
-    const result = await service.doSomething()
-    expect(result).toBeDefined()
-  })
-})
+    const result = await service.doSomething();
+    expect(result).toBeDefined();
+  });
+});
 ```
 
 ### Mock Guidelines
@@ -98,13 +100,13 @@ describe('MyService', () => {
 
 ### Coverage Targets by Area
 
-| Area | Target | Priority |
-|------|--------|----------|
-| Storage Layer | 90% | High |
-| AI Services | 85% | High |
-| React Components | 80% | Medium |
-| API Routes | 85% | High |
-| WebSocket Handlers | 75% | Medium |
+| Area               | Target | Priority |
+| ------------------ | ------ | -------- |
+| Storage Layer      | 90%    | High     |
+| AI Services        | 85%    | High     |
+| React Components   | 80%    | Medium   |
+| API Routes         | 85%    | High     |
+| WebSocket Handlers | 75%    | Medium   |
 
 ## 🔄 Continuous Integration
 
@@ -121,6 +123,7 @@ Our CI pipeline runs on every push and PR:
 ### Pre-commit Hooks
 
 Husky runs these checks before each commit:
+
 - Code formatting (Prettier)
 - Linting (ESLint)
 - Type checking (TypeScript)
@@ -128,16 +131,19 @@ Husky runs these checks before each commit:
 ## 🧩 Test Categories
 
 ### Unit Tests
+
 - Individual function/component testing
 - Isolated business logic validation
 - Fast execution (<100ms per test)
 
 ### Integration Tests
+
 - API endpoint testing
 - Database interaction testing
 - Service integration validation
 
 ### Component Tests
+
 - React component rendering
 - User interaction simulation
 - Props and state validation
@@ -145,36 +151,40 @@ Husky runs these checks before each commit:
 ## 📝 Best Practices
 
 ### Test Organization
+
 ```typescript
 describe('ComponentName', () => {
   describe('when condition', () => {
     it('should do expected behavior', () => {
       // Test implementation
-    })
-  })
-})
+    });
+  });
+});
 ```
 
 ### Naming Conventions
+
 - Test files: `*.test.ts` or `*.test.tsx`
 - Descriptive test names explaining behavior
 - Group related tests with `describe` blocks
 
 ### Test Data
+
 - Use realistic test data
 - Create reusable mock data factories
 - Avoid hardcoded values when possible
 
 ### Assertions
+
 ```typescript
 // Good - specific assertions
-expect(result.status).toBe('success')
-expect(result.data).toHaveLength(3)
-expect(result.timestamp).toBeInstanceOf(Date)
+expect(result.status).toBe('success');
+expect(result.data).toHaveLength(3);
+expect(result.timestamp).toBeInstanceOf(Date);
 
 // Avoid - vague assertions
-expect(result).toBeTruthy()
-expect(result).toEqual(expect.anything())
+expect(result).toBeTruthy();
+expect(result).toEqual(expect.anything());
 ```
 
 ## 🔧 Debugging Tests
