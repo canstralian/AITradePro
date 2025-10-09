@@ -79,11 +79,7 @@ export function getDatabase() {
 export { pool, sqlite };
 
 // For backward compatibility
-export const database = new Proxy({} as any, {
-  get(target, prop) {
-    return getDatabase()[prop as keyof typeof database];
-  },
-});
+export const database = getDatabase();
 
 // Graceful shutdown
 process.on('SIGINT', () => {

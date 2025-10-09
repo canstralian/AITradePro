@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import { storage } from '../storage';
 import { WebSocket } from 'ws';
 import { logger } from '../utils/logger';
 
@@ -297,7 +296,7 @@ export class AsyncWorkerService extends EventEmitter {
   }
 
   private async performPatternMatching(payload: TaskPayload): Promise<unknown> {
-    const { symbol, priceData } = payload as PatternMatchingPayload;
+    const { symbol } = payload as PatternMatchingPayload;
 
     await new Promise(resolve =>
       setTimeout(resolve, 3000 + Math.random() * 2000)
@@ -331,7 +330,7 @@ export class AsyncWorkerService extends EventEmitter {
   private async performSentimentAnalysis(
     payload: TaskPayload
   ): Promise<unknown> {
-    const { symbol, sources } = payload as SentimentAnalysisPayload;
+    const { symbol } = payload as SentimentAnalysisPayload;
 
     await new Promise(resolve =>
       setTimeout(resolve, 1000 + Math.random() * 2000)
@@ -392,13 +391,5 @@ export class AsyncWorkerService extends EventEmitter {
   }
 }
 
-class Worker {
-  public id: string;
-  public busy: boolean = false;
-
-  constructor(id: string) {
-    this.id = id;
-  }
-}
 
 export const asyncWorkerService = new AsyncWorkerService();

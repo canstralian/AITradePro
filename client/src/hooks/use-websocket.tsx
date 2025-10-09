@@ -7,10 +7,14 @@ export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null);
   const messageHandlers = useRef<Map<string, (data: any) => void>>(new Map());
 
+  const isConnecting = useRef(false);
+
   const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
+    if (ws.current?.readyState === WebSocket.OPEN || isConnecting.current) {
       return;
     }
+
+    isConnecting.current = true;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -20,11 +24,13 @@ export function useWebSocket() {
     ws.current.onopen = () => {
       console.log('WebSocket connected');
       setIsConnected(true);
+      isConnecting.current = false;
     };
 
     ws.current.onclose = () => {
       console.log('WebSocket disconnected');
       setIsConnected(false);
+      isConnecting.current = false;
       // Attempt to reconnect after 3 seconds
       setTimeout(connect, 3000);
     };
