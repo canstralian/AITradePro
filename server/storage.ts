@@ -210,7 +210,9 @@ export class MemStorage implements IStorage {
     priceChange24h: string
   ): Promise<Asset | undefined> {
     const asset = this.assets.get(id);
-    if (!asset) return undefined;
+    if (!asset) {
+      return undefined;
+    }
 
     const updatedAsset = {
       ...asset,
@@ -245,7 +247,9 @@ export class MemStorage implements IStorage {
     updates: Partial<Position>
   ): Promise<Position | undefined> {
     const position = this.positions.get(id);
-    if (!position) return undefined;
+    if (!position) {
+      return undefined;
+    }
 
     const updatedPosition = {
       ...position,

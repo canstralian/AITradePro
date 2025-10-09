@@ -96,7 +96,9 @@ export class MarketDataService {
 
   async generateHistoricalData(assetId: string, hours: number = 24) {
     const asset = await storage.getAsset(assetId);
-    if (!asset) return;
+    if (!asset) {
+      return;
+    }
 
     const basePrice = parseFloat(asset.currentPrice);
     const volatility = this.getVolatilityForAsset(asset.symbol);

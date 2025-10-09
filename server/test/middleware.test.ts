@@ -78,7 +78,10 @@ describe('Auth Middleware', () => {
 
       expect(token).toBeTruthy();
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; username: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+        userId: string;
+        username: string;
+      };
       expect(decoded.userId).toBe(user.id);
       expect(decoded.username).toBe(user.username);
     });

@@ -142,13 +142,17 @@ export class AsyncWorkerService extends EventEmitter {
   }
 
   private async processQueue() {
-    if (this.taskQueue.length === 0) return;
+    if (this.taskQueue.length === 0) {
+      return;
+    }
 
     const availableWorkers = Array.from(this.workers.values()).filter(
       worker => !worker.busy
     );
 
-    if (availableWorkers.length === 0) return;
+    if (availableWorkers.length === 0) {
+      return;
+    }
 
     const tasksToProcess = Math.min(
       availableWorkers.length,

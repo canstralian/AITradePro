@@ -27,7 +27,9 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const performRAGAnalysis = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     setIsAnalyzing(true);
     try {
@@ -44,8 +46,12 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
   };
 
   const getSentimentColor = (score: number) => {
-    if (score >= 70) return 'trading-secondary';
-    if (score >= 40) return 'text-yellow-500';
+    if (score >= 70) {
+      return 'trading-secondary';
+    }
+    if (score >= 40) {
+      return 'text-yellow-500';
+    }
     return 'trading-accent';
   };
 

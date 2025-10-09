@@ -8,7 +8,9 @@ export function useWebSocket() {
   const messageHandlers = useRef<Map<string, (data: any) => void>>(new Map());
 
   const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) return;
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;

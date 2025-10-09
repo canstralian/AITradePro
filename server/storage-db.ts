@@ -35,7 +35,9 @@ export class DatabaseStorage implements IStorage {
     try {
       // Check if data already exists
       const existingAssets = await db.select().from(assets).limit(1);
-      if (existingAssets.length > 0) return;
+      if (existingAssets.length > 0) {
+        return;
+      }
 
       // Seed assets
       const assetData: InsertAsset[] = [

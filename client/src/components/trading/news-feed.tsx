@@ -52,8 +52,12 @@ export default function NewsFeed({ news }: NewsFeedProps) {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours === 1) return '1 hour ago';
+    if (diffInHours < 1) {
+      return 'Just now';
+    }
+    if (diffInHours === 1) {
+      return '1 hour ago';
+    }
     return `${diffInHours} hours ago`;
   };
 

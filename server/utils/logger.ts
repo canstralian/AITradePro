@@ -46,7 +46,9 @@ class Logger {
   }
 
   private log(level: LogLevel, message: string, meta?: any): void {
-    if (!this.shouldLog(level)) return;
+    if (!this.shouldLog(level)) {
+      return;
+    }
 
     const formatted = this.formatMessage(level, message, meta);
 

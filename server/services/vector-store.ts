@@ -149,7 +149,9 @@ export class VectorStoreService {
   }
 
   private calculateConfidenceScore(context: any[]): number {
-    if (context.length === 0) return 0;
+    if (context.length === 0) {
+      return 0;
+    }
 
     const avgSimilarity =
       context.reduce((sum, item) => sum + item.similarity, 0) / context.length;

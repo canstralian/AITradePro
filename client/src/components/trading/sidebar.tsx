@@ -34,7 +34,9 @@ export default function Sidebar({
   ]);
 
   const handleQuerySubmit = () => {
-    if (!queryInput.trim()) return;
+    if (!queryInput.trim()) {
+      return;
+    }
 
     // Add user message to conversation
     setConversation(prev => [
