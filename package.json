@@ -123,12 +123,12 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.18.1",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.25.11",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
     "typescript": "5.6.3",
-    "vite": "^7.0.6"
+    "vite": "^7.1.11"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
