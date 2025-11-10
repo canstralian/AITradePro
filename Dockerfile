@@ -27,7 +27,6 @@ RUN npm ci --only=production --ignore-scripts && \
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
