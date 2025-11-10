@@ -56,7 +56,42 @@ jobs:
           name: coverage-unit
           path: coverage-unit/lcov.info
 
-  integration_tests:
+  integration_tests_sqlite:
+    name: Integration Tests (SQLite)
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run DB Migrations (SQLite)
+        env:
+          DATABASE_URL: 'sqlite::memory:'
+        run: |
+          if npm run | grep -q migrate; then
+            npm run migrate
+          elif [ -f drizzle.config.ts ]; then
+            npx drizzle-kit push
+          fi
+      - name: Integration Tests with Coverage (SQLite)
+        env:
+          DATABASE_URL: 'sqlite::memory:'
+        run: |
+          mkdir -p coverage-integration-sqlite
+          npx jest --config jest.integration.config.js \
+                   --coverage \
+                   --coverageReporters=lcov \
+                   --coverageDirectory=coverage-integration-sqlite
+      - name: Upload Coverage (integration-sqlite)
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration-sqlite
+          path: coverage-integration-sqlite/lcov.info
+
+  integration_tests_postgres:
     name: Integration Tests (PostgreSQL)
     needs: tests
     runs-on: ubuntu-latest
@@ -86,29 +121,29 @@ jobs:
             pg_isready -h localhost -p 5432 -U $POSTGRES_USER && break
             sleep 2
           done
-      - name: Run DB Migrations
+      - name: Run DB Migrations (PostgreSQL)
         run: |
           if npm run | grep -q migrate; then
             npm run migrate
-          elif [ -f prisma/schema.prisma ]; then
-            npx prisma migrate deploy
+          elif [ -f drizzle.config.ts ]; then
+            npx drizzle-kit push
           fi
-      - name: Integration Tests with Coverage
+      - name: Integration Tests with Coverage (PostgreSQL)
         run: |
-          mkdir -p coverage-integration
+          mkdir -p coverage-integration-postgres
           npx jest --config jest.integration.config.js \
                    --coverage \
                    --coverageReporters=lcov \
-                   --coverageDirectory=coverage-integration
-      - name: Upload Coverage (integration)
+                   --coverageDirectory=coverage-integration-postgres
+      - name: Upload Coverage (integration-postgres)
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-integration
-          path: coverage-integration/lcov.info
+          name: coverage-integration-postgres
+          path: coverage-integration-postgres/lcov.info
 
   coverage_upload:
     name: Upload Coverage to Codecov
-    needs: [tests, integration_tests]
+    needs: [tests, integration_tests_sqlite, integration_tests_postgres]
     runs-on: ubuntu-latest
     steps:
       - name: Download Unit Coverage
@@ -116,11 +151,16 @@ jobs:
         with:
           name: coverage-unit
           path: coverage-unit
-      - name: Download Integration Coverage
+      - name: Download SQLite Integration Coverage
         uses: actions/download-artifact@v4
         with:
-          name: coverage-integration
-          path: coverage-integration
+          name: coverage-integration-sqlite
+          path: coverage-integration-sqlite
+      - name: Download PostgreSQL Integration Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-integration-postgres
+          path: coverage-integration-postgres
       - name: Upload Unit Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -129,11 +169,19 @@ jobs:
           flags: unit-tests
           fail_ci_if_error: true
           verbose: true
-      - name: Upload Integration Coverage to Codecov
+      - name: Upload SQLite Integration Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN || '' }}
-          files: coverage-integration/lcov.info
-          flags: integration-tests
+          files: coverage-integration-sqlite/lcov.info
+          flags: integration-tests-sqlite
+          fail_ci_if_error: true
+          verbose: true
+      - name: Upload PostgreSQL Integration Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || '' }}
+          files: coverage-integration-postgres/lcov.info
+          flags: integration-tests-postgres
           fail_ci_if_error: true
           verbose: true
