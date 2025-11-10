@@ -128,7 +128,7 @@
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
     "typescript": "5.6.3",
-    "vite": "^7.0.6"
+    "vite": "^7.2.2"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
