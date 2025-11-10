@@ -8,7 +8,7 @@ pydantic-settings==2.1.0
 # FastAPI for API endpoints
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
-python-multipart==0.0.6
+python-multipart==0.0.18
 
 # Date/Time handling
 python-dateutil==2.8.2
@@ -21,7 +21,7 @@ pytest-cov==4.1.0
 httpx==0.26.0
 
 # Code quality
-black==23.12.1
+black==24.3.0
 ruff==0.1.9
 mypy==1.8.0
 
