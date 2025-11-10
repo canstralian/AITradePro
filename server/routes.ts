@@ -19,6 +19,8 @@ import {
 import { helmetMiddleware } from './middleware/helmet';
 import { logger } from './utils/logger';
 import { initializeDatabase } from './services/db-init';
+import backtestingRoutes from './backtesting/routes';
+import { backtestingService } from './backtesting/service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -33,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     marketDataService.addClient(ws);
     aiAnalysisService.addClient(ws);
     asyncWorkerService.addClient(ws);
+    backtestingService.addClient(ws);
 
     // Handle incoming messages
     ws.on('message', async data => {
@@ -146,6 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use('/api', sanitizeInput);
   app.use('/api', apiRateLimit);
+
+  // Backtesting routes
+  app.use('/api/backtesting', backtestingRoutes);
 
   // REST API Routes
 
