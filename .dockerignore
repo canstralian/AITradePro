@@ -30,7 +30,6 @@ vitest.config.ts
 
 # Build artifacts
 dist
-client/dist
 *.db
 *.db-journal
 
