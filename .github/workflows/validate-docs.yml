@@ -5,6 +5,9 @@ on:
     paths:
       - .github/copilot-instructions.md
 
+permissions:
+  contents: read
+
 jobs:
   validate-docs:
     runs-on: ubuntu-latest
