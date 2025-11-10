@@ -184,7 +184,8 @@ export class PaperBroker implements IBroker {
 
   getPortfolio(): Portfolio {
     let positionValue = 0;
-    for (const position of this.positions.values()) {
+    const positionsArray = Array.from(this.positions.values());
+    for (const position of positionsArray) {
       positionValue += position.currentPrice * position.quantity;
     }
 

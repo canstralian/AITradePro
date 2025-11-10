@@ -64,7 +64,7 @@ export class BacktestingService {
     const db = getDatabase();
     const id = `strategy_${Date.now()}`;
     
-    await db.insert(strategies).values({
+    await (db as any).insert(strategies).values({
       id,
       ...data,
       createdAt: new Date(),
@@ -79,7 +79,7 @@ export class BacktestingService {
    */
   async getStrategies(): Promise<any[]> {
     const db = getDatabase();
-    return await db.select().from(strategies).orderBy(desc(strategies.createdAt));
+    return await (db as any).select().from(strategies).orderBy(desc(strategies.createdAt));
   }
 
   /**
@@ -87,7 +87,7 @@ export class BacktestingService {
    */
   async getStrategy(id: string): Promise<any> {
     const db = getDatabase();
-    const results = await db.select().from(strategies).where(eq(strategies.id, id));
+    const results = await (db as any).select().from(strategies).where(eq(strategies.id, id));
     return results[0] || null;
   }
 
@@ -150,7 +150,7 @@ export class BacktestingService {
    */
   async getBacktestRuns(limit: number = 50): Promise<any[]> {
     const db = getDatabase();
-    return await db
+    return await (db as any)
       .select()
       .from(backtestRuns)
       .orderBy(desc(backtestRuns.createdAt))
@@ -162,7 +162,7 @@ export class BacktestingService {
    */
   async getBacktestRun(id: string): Promise<any> {
     const db = getDatabase();
-    const results = await db.select().from(backtestRuns).where(eq(backtestRuns.id, id));
+    const results = await (db as any).select().from(backtestRuns).where(eq(backtestRuns.id, id));
     return results[0] || null;
   }
 
@@ -171,7 +171,7 @@ export class BacktestingService {
    */
   async getBacktestTrades(runId: string): Promise<any[]> {
     const db = getDatabase();
-    return await db
+    return await (db as any)
       .select()
       .from(backtestTrades)
       .where(eq(backtestTrades.backtestRunId, runId))
@@ -183,7 +183,7 @@ export class BacktestingService {
    */
   async getBacktestPerformance(runId: string): Promise<any[]> {
     const db = getDatabase();
-    return await db
+    return await (db as any)
       .select()
       .from(backtestPerformance)
       .where(eq(backtestPerformance.backtestRunId, runId))
@@ -204,7 +204,7 @@ export class BacktestingService {
     const db = getDatabase();
     const id = `session_${Date.now()}`;
 
-    await db.insert(paperTradingSessions).values({
+    await (db as any).insert(paperTradingSessions).values({
       id,
       strategyId,
       name: `Paper Trading - ${new Date().toISOString()}`,
@@ -229,7 +229,7 @@ export class BacktestingService {
   async stopPaperTrading(sessionId: string): Promise<void> {
     const db = getDatabase();
     
-    await db
+    await (db as any)
       .update(paperTradingSessions)
       .set({ 
         isActive: false, 
@@ -248,7 +248,7 @@ export class BacktestingService {
    */
   async getPaperTradingSessions(activeOnly: boolean = false): Promise<any[]> {
     const db = getDatabase();
-    const query = db.select().from(paperTradingSessions);
+    const query = (db as any).select().from(paperTradingSessions);
     
     if (activeOnly) {
       return await query.where(eq(paperTradingSessions.isActive, true));

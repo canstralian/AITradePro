@@ -56,7 +56,7 @@ export class BacktestEngine {
       await this.createBacktestRun();
       
       // Update status to running
-      await db.update(backtestRuns)
+      await (db as any).update(backtestRuns)
         .set({ status: 'running' })
         .where(eq(backtestRuns.id, this.runId));
 
@@ -97,7 +97,7 @@ export class BacktestEngine {
       const finalPortfolio = this.broker.getPortfolio();
 
       // Update backtest run with results
-      await db.update(backtestRuns)
+      await (db as any).update(backtestRuns)
         .set({
           status: 'completed',
           finalCapital: finalPortfolio.totalValue.toFixed(2),
@@ -128,7 +128,7 @@ export class BacktestEngine {
       logger.error('Backtest failed', { error, runId: this.runId });
       
       // Update status to failed
-      await db.update(backtestRuns)
+      await (db as any).update(backtestRuns)
         .set({
           status: 'failed',
           errorMessage: error instanceof Error ? error.message : 'Unknown error',
@@ -205,7 +205,7 @@ export class BacktestEngine {
       : this.config.endDate;
 
     // Query market data
-    const data = await db.select()
+    const data = await (db as any).select()
       .from(marketData)
       .where(
         and(
@@ -216,7 +216,7 @@ export class BacktestEngine {
       .orderBy(marketData.timestamp);
 
     // Convert to market bars (using close price for all OHLC for simplicity)
-    return data.map(d => ({
+    return data.map((d: any) => ({
       timestamp: d.timestamp,
       open: parseFloat(d.price),
       high: parseFloat(d.price) * 1.001,
@@ -249,7 +249,7 @@ export class BacktestEngine {
       status: 'pending',
     };
 
-    await db.insert(backtestRuns).values(run);
+    await (db as any).insert(backtestRuns).values(run);
   }
 
   /**
@@ -274,7 +274,7 @@ export class BacktestEngine {
       timestamp: order.timestamp,
     };
 
-    await db.insert(backtestTrades).values(trade);
+    await (db as any).insert(backtestTrades).values(trade);
   }
 
   /**
@@ -285,7 +285,8 @@ export class BacktestEngine {
     const portfolio = this.broker.getPortfolio();
     
     let positionValue = 0;
-    for (const position of portfolio.positions.values()) {
+    const positionsArray = Array.from(portfolio.positions.values());
+    for (const position of positionsArray) {
       positionValue += position.currentPrice * position.quantity;
     }
 
@@ -308,6 +309,6 @@ export class BacktestEngine {
       drawdown: drawdown.toFixed(4),
     };
 
-    await db.insert(backtestPerformance).values(performance);
+    await (db as any).insert(backtestPerformance).values(performance);
   }
 }
