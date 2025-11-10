@@ -18,6 +18,8 @@ jobs:
   lint_typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -41,6 +43,8 @@ jobs:
   security_audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -65,6 +69,8 @@ jobs:
     name: Tests with SQLite (Development)
     needs: [lint_typecheck]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -101,6 +107,8 @@ jobs:
     name: Tests with PostgreSQL (Production)
     needs: [lint_typecheck]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -176,6 +184,8 @@ jobs:
     name: Docker Build & Hadolint
     needs: [lint_typecheck]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -209,6 +219,9 @@ jobs:
     name: Trivy Security Scan
     needs: [docker_build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       
@@ -250,6 +263,8 @@ jobs:
     name: Coverage Report
     needs: [test_postgresql]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -275,6 +290,8 @@ jobs:
     name: Production Build Verification
     needs: [test_sqlite, test_postgresql, security_audit]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -318,6 +335,8 @@ jobs:
     name: CI Pipeline Summary
     needs: [lint_typecheck, security_audit, test_sqlite, test_postgresql, docker_build, docker_security_scan, build_verification]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     steps:
       - name: Check job statuses
