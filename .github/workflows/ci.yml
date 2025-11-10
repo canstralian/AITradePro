@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 env:
   NODE_LTS: 'lts/*'
   POSTGRES_USER: aiuser
@@ -16,6 +21,8 @@ jobs:
   lint_typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,6 +39,8 @@ jobs:
   security_audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,6 +58,8 @@ jobs:
     name: Build & Test (${{ matrix.db }} / Node ${{ matrix.node }})
     needs: lint_typecheck
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -106,6 +117,9 @@ jobs:
     name: Docker Build & Validation
     needs: lint_typecheck
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       
@@ -154,6 +168,8 @@ jobs:
     needs: [build_and_test_matrix]
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
