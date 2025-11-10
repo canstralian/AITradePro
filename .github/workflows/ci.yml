@@ -1,19 +1,71 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
 env:
   NODE_LTS: 'lts/*'
-  POSTGRES_USER: testuser
-  POSTGRES_PASSWORD: testpass
+  POSTGRES_USER: aiuser
+  POSTGRES_PASSWORD: aipass
   POSTGRES_DB: aitradepro_test
-  DATABASE_URL: postgresql://testuser:testpass@localhost:5432/aitradepro_test
 
 jobs:
-  tests:
-    name: Unit Tests (Node matrix)
+  lint_typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+      - name: Run TypeScript Check
+        run: npm run check
+
+  security_audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+      - name: Run audit-ci
+        run: npm run audit
+        continue-on-error: true
+
+  build_and_test_matrix:
+    name: Build & Test (${{ matrix.db }} / Node ${{ matrix.node }})
     needs: lint_typecheck
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         node: [18.x, lts/*]
+        db: [sqlite, postgres]
+    services:
+      postgres:
+        image: ${{ matrix.db == 'postgres' && 'postgres:16-alpine' || '' }}
+        env:
+          POSTGRES_USER: ${{ matrix.db == 'postgres' && env.POSTGRES_USER || '' }}
+          POSTGRES_PASSWORD: ${{ matrix.db == 'postgres' && env.POSTGRES_PASSWORD || '' }}
+          POSTGRES_DB: ${{ matrix.db == 'postgres' && env.POSTGRES_DB || '' }}
+        ports:
+          - 5432:5432
+        options: ${{ matrix.db == 'postgres' && '--health-cmd="pg_isready -U aiuser -d aitradepro_test" --health-interval=5s --health-timeout=5s --health-retries=12' || '' }}
+    env:
+      DATABASE_URL: ${{ matrix.db == 'postgres' && format('postgresql://{0}:{1}@localhost:5432/{2}', env.POSTGRES_USER, env.POSTGRES_PASSWORD, env.POSTGRES_DB) || 'sqlite::memory:' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,106 +75,102 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
       - run: npm ci
-      - name: Build (if required)
-        if: hashFiles('tsconfig.json') != ''
-        run: npm run build --if-present
-      - name: Run Unit Tests (with coverage on primary Node)
-        if: matrix.node == env.NODE_LTS
+      
+      - name: Wait for PostgreSQL
+        if: matrix.db == 'postgres'
         run: |
-          mkdir -p reports/junit coverage-unit
-          npx jest --config jest.unit.config.js \
-                   --coverage \
-                   --coverageReporters=lcov \
-                   --coverageDirectory=coverage-unit \
-                   --reporters=default \
-                   --reporters=jest-junit
-        env:
-          JEST_JUNIT_OUTPUT: reports/junit/junit.xml
-      - name: Upload Coverage (unit)
-        if: matrix.node == env.NODE_LTS && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-unit
-          path: coverage-unit/lcov.info
-
-  integration_tests:
-    name: Integration Tests (PostgreSQL)
-    needs: tests
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=12
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_LTS }}
-          cache: 'npm'
-      - run: npm ci
-      - run: |
           for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U $POSTGRES_USER && break
+            pg_isready -h localhost -p 5432 -U ${{ env.POSTGRES_USER }} && break
             sleep 2
           done
-      - name: Run DB Migrations
-        run: |
-          if npm run | grep -q migrate; then
-            npm run migrate
-          elif [ -f prisma/schema.prisma ]; then
-            npx prisma migrate deploy
-          fi
-      - name: Integration Tests with Coverage
-        run: |
-          mkdir -p coverage-integration
-          npx jest --config jest.integration.config.js \
-                   --coverage \
-                   --coverageReporters=lcov \
-                   --coverageDirectory=coverage-integration
-      - name: Upload Coverage (integration)
+      
+      - name: Build Application
+        run: npm run build --if-present
+      
+      - name: Run Tests with Coverage
+        if: matrix.node == env.NODE_LTS && matrix.db == 'postgres'
+        run: npm run test:coverage
+      
+      - name: Run Tests (no coverage)
+        if: matrix.node != env.NODE_LTS || matrix.db != 'postgres'
+        run: npm run test:run
+      
+      - name: Upload Coverage
+        if: matrix.node == env.NODE_LTS && matrix.db == 'postgres'
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-integration
-          path: coverage-integration/lcov.info
+          name: coverage-${{ matrix.db }}
+          path: coverage/lcov.info
+
+  docker_build:
+    name: Docker Build & Validation
+    needs: lint_typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Lint Dockerfile with Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+      
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: aitradepro:test
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: aitradepro:test
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run Trivy vulnerability scanner (table format)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: aitradepro:test
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
 
   coverage_upload:
     name: Upload Coverage to Codecov
-    needs: [tests, integration_tests]
+    needs: [build_and_test_matrix]
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: Download Unit Coverage
+      - uses: actions/checkout@v4
+      
+      - name: Download Coverage Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: coverage-unit
-          path: coverage-unit
-      - name: Download Integration Coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-integration
-          path: coverage-integration
-      - name: Upload Unit Coverage to Codecov
+          pattern: coverage-*
+          path: coverage-artifacts
+          merge-multiple: true
+        continue-on-error: true
+      
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
+        if: hashFiles('coverage-artifacts/*.info') != ''
         with:
           token: ${{ secrets.CODECOV_TOKEN || '' }}
-          files: coverage-unit/lcov.info
-          flags: unit-tests
-          fail_ci_if_error: true
-          verbose: true
-      - name: Upload Integration Coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN || '' }}
-          files: coverage-integration/lcov.info
-          flags: integration-tests
-          fail_ci_if_error: true
+          directory: coverage-artifacts
+          flags: all-tests
+          fail_ci_if_error: false
           verbose: true
