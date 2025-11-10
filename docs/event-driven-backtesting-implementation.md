@@ -1,106 +1,46 @@
-# Node.js MCP Client Implementation
+# Event-Driven Backtesting Implementation
 
-## Overview
+## Problem Statement
 
-This document outlines the Node.js MCP client implementation for communicating with the Python backtesting MCP server.
+The initial polling-based implementation in `backtesting-worker.ts` was inefficient:
 
-## File Structure
-
-```
-server/
-├── services/
-│   ├── mcp-backtesting-client.ts    # MCP client service
-│   ├── backtesting-worker.ts        # Backtesting worker integration
-│   └── backtesting-storage.ts       # Backtesting data access layer
-├── routes/
-│   └── backtesting-routes.ts        # REST API routes for backtesting
-└── types/
-    └── backtesting.ts               # TypeScript type definitions
-```
-
-## Dependencies
-
-Add to `package.json`:
-
-```json
-{
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "zod": "^3.24.2"
-  }
+```typescript
+// ❌ BAD: Polling with fixed delays
+while (attempts < maxAttempts) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  const result = await mcpBacktestingClient.getBacktestResults(backtestId);
+  if (result.status === 'completed') break;
+  attempts++;
 }
+```
+
+**Issues:**
+- Fixed 5-second delay regardless of actual completion time
+- Arbitrary timeout (5 minutes) may be too short for complex backtests
+- Wastes resources polling when nothing has changed
+- Doesn't align with WebSocket architecture documented in `mcp-backtesting-architecture.md`
+
+## Solution: Event-Driven Architecture
+
+Use WebSocket events for real-time progress updates and completion notifications.
+
+### Architecture Flow
+
+```
+Python MCP Server
+      ↓ (progress events)
+Node.js MCP Client (EventEmitter)
+      ↓ (emit events)
+Async Worker Service
+      ↓ (broadcast)
+WebSocket Clients
 ```
 
 ## Implementation
 
-### 1. `server/types/backtesting.ts` - Type Definitions
+### 1. Enhanced MCP Client with Event Support
 
-```typescript
-import { z } from 'zod';
-
-// Zod schemas for validation
-export const BacktestParamsSchema = z.object({
-  strategyId: z.string(),
-  assetSymbol: z.string(),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime(),
-  initialCapital: z.number().positive(),
-  parameters: z.record(z.unknown()),
-});
-
-export const BacktestResultSchema = z.object({
-  backtestId: z.string(),
-  status: z.enum(['pending', 'running', 'completed', 'failed']),
-  finalCapital: z.number().optional(),
-  totalReturn: z.number().optional(),
-  metrics: z.record(z.unknown()).optional(),
-  trades: z.array(z.unknown()).optional(),
-  equityCurve: z.array(z.number()).optional(),
-});
-
-// TypeScript types
-export type BacktestParams = z.infer<typeof BacktestParamsSchema>;
-export type BacktestResult = z.infer<typeof BacktestResultSchema>;
-
-export interface BacktestTrade {
-  entryDate: string;
-  exitDate: string | null;
-  direction: 'long' | 'short';
-  entryPrice: number;
-  exitPrice: number | null;
-  quantity: number;
-  pnl: number;
-  pnlPercent: number;
-  status: 'open' | 'closed';
-}
-
-export interface BacktestMetrics {
-  finalCapital: number;
-  totalReturn: number;
-  sharpeRatio: number;
-  maxDrawdown: number;
-  winRate: number;
-  totalTrades: number;
-  winningTrades: number;
-  losingTrades: number;
-  avgWin: number;
-  avgLoss: number;
-  profitFactor: number;
-}
-
-export interface TradingStrategy {
-  id: string;
-  name: string;
-  description: string;
-  parametersSchema: Record<string, unknown>;
-  defaultParameters?: Record<string, unknown>;
-}
-```
-
-### 2. `server/services/mcp-backtesting-client.ts` - MCP Client Service
-
-**⚠️ IMPORTANT:** This implementation extends EventEmitter for event-driven backtest completion.
-See `docs/event-driven-backtesting-implementation.md` for detailed architecture.
+**File:** `server/services/mcp-backtesting-client.ts`
 
 ```typescript
 import { EventEmitter } from 'events';
@@ -142,7 +82,6 @@ export class MCPBacktestingClient extends EventEmitter {
 
   constructor() {
     super();
-    // Path to Python MCP server
     this.pythonServerPath =
       process.env.PYTHON_BACKTESTING_SERVER_PATH ||
       './server/python-services/backtesting-mcp/main.py';
@@ -159,7 +98,6 @@ export class MCPBacktestingClient extends EventEmitter {
         serverPath: this.pythonServerPath,
       });
 
-      // Spawn Python process
       const pythonProcess = spawn('python3', [this.pythonServerPath], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: {
@@ -168,14 +106,12 @@ export class MCPBacktestingClient extends EventEmitter {
         },
       });
 
-      // Create stdio transport
       this.transport = new StdioClientTransport({
         stdin: pythonProcess.stdin,
         stdout: pythonProcess.stdout,
         stderr: pythonProcess.stderr,
       });
 
-      // Create MCP client
       this.client = new Client(
         {
           name: 'aitradepro-backend',
@@ -188,7 +124,6 @@ export class MCPBacktestingClient extends EventEmitter {
         }
       );
 
-      // Connect to server
       await this.client.connect(this.transport);
 
       // Set up event listening for MCP notifications
@@ -198,7 +133,6 @@ export class MCPBacktestingClient extends EventEmitter {
 
       logger.info('MCP backtesting client initialized successfully');
 
-      // Handle process errors
       pythonProcess.on('error', error => {
         logger.error('Python process error', { error: error.message });
       });
@@ -218,8 +152,8 @@ export class MCPBacktestingClient extends EventEmitter {
   private setupEventListening(): void {
     if (!this.client) return;
 
-    // Listen for MCP notifications from Python server
-    // Note: Actual MCP SDK API may differ - adjust based on SDK version
+    // Listen for MCP notifications (if MCP SDK supports notifications)
+    // This is a conceptual implementation - actual MCP SDK API may differ
     this.client.onNotification?.((notification: any) => {
       if (notification.method === 'backtest/progress') {
         const event: BacktestProgressEvent = notification.params;
@@ -280,7 +214,6 @@ export class MCPBacktestingClient extends EventEmitter {
         },
       });
 
-      // Parse MCP response
       const resourceContent = result.content.find(
         item => item.type === 'resource'
       );
@@ -309,11 +242,7 @@ export class MCPBacktestingClient extends EventEmitter {
 
   /**
    * Wait for backtest completion using event-driven approach.
-   * Returns a promise that resolves when the backtest completes or fails.
-   *
-   * @param backtestId - ID of the backtest to wait for
-   * @param timeoutMs - Maximum time to wait (default: 10 minutes)
-   * @returns Promise that resolves with BacktestResult or rejects on failure/timeout
+   * Returns a promise that resolves when the backtest completes.
    */
   async waitForBacktestCompletion(
     backtestId: string,
@@ -510,16 +439,15 @@ export class MCPBacktestingClient extends EventEmitter {
 export const mcpBacktestingClient = new MCPBacktestingClient();
 ```
 
-### 3. `server/services/backtesting-worker.ts` - Worker Integration
+### 2. Event-Driven Worker Service
 
-**⚠️ IMPORTANT:** This implementation uses an event-driven approach instead of polling.
-See `docs/event-driven-backtesting-implementation.md` for detailed explanation.
+**File:** `server/services/backtesting-worker.ts`
 
 ```typescript
 import { asyncWorkerService, WorkerTask } from './async-workers';
 import { mcpBacktestingClient } from './mcp-backtesting-client';
-import { logger } from '../utils/logger';
 import type { BacktestParams } from '../types/backtesting';
+import { logger } from '../utils/logger';
 
 export async function enqueueBacktest(
   params: BacktestParams,
@@ -560,13 +488,11 @@ export async function processBacktestTask(
       backtestId,
     });
 
-    // ✅ EVENT-DRIVEN: Wait for completion via events (not polling!)
-    // The MCP client listens for 'backtest:complete' or 'backtest:failed' events
-    // and resolves/rejects the promise accordingly.
-    // Timeout is configurable based on expected backtest duration.
+    // ✅ GOOD: Event-driven waiting with configurable timeout
+    // The timeout is longer and appropriate for long-running backtests
     const result = await mcpBacktestingClient.waitForBacktestCompletion(
       backtestId,
-      3600000 // 1 hour timeout (adjustable per backtest complexity)
+      3600000 // 1 hour timeout (adjustable based on backtest complexity)
     );
 
     logger.info('Backtest completed successfully', {
@@ -575,9 +501,6 @@ export async function processBacktestTask(
       finalCapital: result.finalCapital,
       totalReturn: result.totalReturn,
     });
-
-    // Store results in database
-    // await storage.saveBacktestResults(result);
 
     return result;
   } catch (error) {
@@ -589,9 +512,9 @@ export async function processBacktestTask(
   }
 }
 
-// Register backtest event listeners to broadcast progress to WebSocket clients
+// Register backtest progress listener to broadcast to WebSocket clients
 export function registerBacktestingWorkers() {
-  // Listen for progress events and broadcast to all WebSocket clients
+  // Listen for progress events and broadcast to WebSocket clients
   mcpBacktestingClient.on('backtest:progress', (event) => {
     asyncWorkerService.broadcastMessage({
       type: 'backtest_progress',
@@ -617,240 +540,197 @@ export function registerBacktestingWorkers() {
 }
 ```
 
-### 4. `server/routes/backtesting-routes.ts` - REST API Routes
+### 3. Enhanced Async Worker Service (Add Broadcasting)
+
+**File:** `server/services/async-workers.ts` (Addition)
 
 ```typescript
-import type { Express } from 'express';
-import { mcpBacktestingClient } from '../services/mcp-backtesting-client';
-import { enqueueBacktest } from '../services/backtesting-worker';
-import { validateSchema } from '../middleware/validation';
-import { BacktestParamsSchema } from '../types/backtesting';
-import { logger } from '../utils/logger';
+// Add this method to AsyncWorkerService class
 
-export function registerBacktestingRoutes(app: Express) {
-  // List available strategies
-  app.get('/api/backtesting/strategies', async (req, res) => {
-    try {
-      const strategies = await mcpBacktestingClient.listStrategies();
-      res.json(strategies);
-    } catch (error) {
-      logger.error('Failed to fetch strategies', {
-        error: error instanceof Error ? error.message : error,
-      });
-      res.status(500).json({ message: 'Failed to fetch strategies' });
-    }
-  });
-
-  // Start a backtest
-  app.post(
-    '/api/backtesting/run',
-    validateSchema({ body: BacktestParamsSchema }),
-    async (req, res) => {
-      try {
-        const params = req.body;
-
-        // Validate strategy first
-        const validation = await mcpBacktestingClient.validateStrategy({
-          strategyId: params.strategyId,
-          parameters: params.parameters,
-        });
-
-        if (!validation.valid) {
-          return res.status(400).json({
-            message: 'Invalid strategy configuration',
-            errors: validation.errors,
-          });
-        }
-
-        // Enqueue backtest task
-        const taskId = await enqueueBacktest(params, 'medium');
-
-        res.json({
-          taskId,
-          status: 'queued',
-          message: 'Backtest queued successfully',
-        });
-      } catch (error) {
-        logger.error('Failed to start backtest', {
-          error: error instanceof Error ? error.message : error,
-        });
-        res.status(500).json({ message: 'Failed to start backtest' });
-      }
-    }
-  );
-
-  // Get backtest results
-  app.get('/api/backtesting/results/:backtestId', async (req, res) => {
-    try {
-      const { backtestId } = req.params;
-      const results = await mcpBacktestingClient.getBacktestResults(
-        backtestId
-      );
-
-      res.json(results);
-    } catch (error) {
-      logger.error('Failed to fetch backtest results', {
-        backtestId: req.params.backtestId,
-        error: error instanceof Error ? error.message : error,
-      });
-      res.status(500).json({ message: 'Failed to fetch backtest results' });
-    }
-  });
-
-  // Get backtest metrics
-  app.get('/api/backtesting/metrics/:backtestId', async (req, res) => {
-    try {
-      const { backtestId } = req.params;
-      const metricNames = req.query.metrics
-        ? (req.query.metrics as string).split(',')
-        : undefined;
-
-      const metrics = await mcpBacktestingClient.getMetrics(
-        backtestId,
-        metricNames
-      );
-
-      res.json(metrics);
-    } catch (error) {
-      logger.error('Failed to fetch metrics', {
-        backtestId: req.params.backtestId,
-        error: error instanceof Error ? error.message : error,
-      });
-      res.status(500).json({ message: 'Failed to fetch metrics' });
-    }
-  });
-
-  // Validate strategy configuration
-  app.post('/api/backtesting/validate-strategy', async (req, res) => {
-    try {
-      const { strategyId, parameters } = req.body;
-
-      const validation = await mcpBacktestingClient.validateStrategy({
-        strategyId,
-        parameters,
-      });
-
-      res.json(validation);
-    } catch (error) {
-      logger.error('Failed to validate strategy', {
-        error: error instanceof Error ? error.message : error,
-      });
-      res.status(500).json({ message: 'Failed to validate strategy' });
-    }
-  });
-}
-```
-
-### 5. Integration with `server/index.ts`
-
-Add to `server/index.ts`:
-
-```typescript
-import { mcpBacktestingClient } from './services/mcp-backtesting-client';
-import { registerBacktestingRoutes } from './routes/backtesting-routes';
-import { registerBacktestingWorkers } from './services/backtesting-worker';
-
-// In the startup sequence
-async function startServer() {
+export class AsyncWorkerService extends EventEmitter {
   // ... existing code ...
 
-  // Initialize MCP backtesting client
-  try {
-    await mcpBacktestingClient.initialize();
-    logger.info('MCP backtesting client initialized');
-  } catch (error) {
-    logger.error('Failed to initialize MCP client', {
-      error: error instanceof Error ? error.message : error,
+  /**
+   * Broadcast a message to all connected WebSocket clients.
+   */
+  broadcastMessage(message: { type: string; data: any }): void {
+    const messageStr = JSON.stringify(message);
+
+    this.connectedClients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(messageStr);
+      }
     });
-    // Continue without backtesting features
+
+    logger.debug('Broadcasted message to clients', {
+      type: message.type,
+      clientCount: this.connectedClients.size,
+    });
   }
-
-  // Register backtesting routes
-  registerBacktestingRoutes(app);
-
-  // Register backtesting workers
-  registerBacktestingWorkers();
-
-  // ... rest of startup ...
 }
+```
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  await mcpBacktestingClient.disconnect();
-  process.exit(0);
+### 4. WebSocket Message Handler
+
+**File:** `server/routes.ts` (Enhancement)
+
+```typescript
+// In the WebSocket connection handler, add backtest-specific message handling
+
+ws.on('message', async data => {
+  try {
+    const message = JSON.parse(data.toString());
+
+    if (message.type === 'subscribe_backtest') {
+      // Client wants to subscribe to updates for a specific backtest
+      const { backtestId } = message;
+
+      logger.info('Client subscribed to backtest', {
+        clientId,
+        backtestId,
+      });
+
+      // Store subscription (you could extend this to filter broadcasts)
+      // For now, clients receive all backtest events
+    }
+
+    if (message.type === 'start_backtest') {
+      const params = message.params as BacktestParams;
+
+      // Validate parameters
+      const validation = await mcpBacktestingClient.validateStrategy({
+        strategyId: params.strategyId,
+        parameters: params.parameters,
+      });
+
+      if (!validation.valid) {
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: {
+            message: 'Invalid strategy configuration',
+            errors: validation.errors,
+          },
+        }));
+        return;
+      }
+
+      // Enqueue backtest
+      const taskId = await enqueueBacktest(params, 'medium');
+
+      ws.send(JSON.stringify({
+        type: 'backtest_queued',
+        data: { taskId, status: 'queued' },
+      }));
+    }
+
+    // ... existing message handlers ...
+  } catch (error) {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        data: { error: 'Failed to process message' },
+      }));
+    }
+  }
 });
 ```
+
+## Python MCP Server Event Emission (Phase 2)
+
+For Phase 2, the Python MCP server should emit notifications during backtest execution:
+
+```python
+# In backtesting engine
+async def run_backtest(...):
+    backtest_id = generate_id()
+
+    # Emit progress updates
+    for i, date in enumerate(date_range):
+        # ... process date ...
+
+        if i % 100 == 0:  # Every 100 iterations
+            progress = (i / len(date_range)) * 100
+            await server.send_notification(
+                method="backtest/progress",
+                params={
+                    "backtestId": backtest_id,
+                    "progress": progress,
+                    "currentDate": date.isoformat(),
+                    "tradesExecuted": len(trades),
+                }
+            )
+
+    # Emit completion
+    await server.send_notification(
+        method="backtest/complete",
+        params={
+            "backtestId": backtest_id,
+            "result": final_results,
+        }
+    )
+```
+
+## Benefits
+
+✅ **No polling delays** - Instant notification when backtest completes
+✅ **Efficient resource usage** - No unnecessary network requests
+✅ **Real-time progress** - Clients see live updates during execution
+✅ **Flexible timeouts** - Can adjust based on backtest complexity
+✅ **Scalable** - Event-driven architecture handles many concurrent backtests
+✅ **Aligns with architecture** - Matches documented WebSocket design
 
 ## Testing
 
 ```typescript
-// tests/mcp-backtesting-client.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mcpBacktestingClient } from '../services/mcp-backtesting-client';
-
-describe('MCP Backtesting Client', () => {
-  beforeAll(async () => {
-    await mcpBacktestingClient.initialize();
-  });
-
-  afterAll(async () => {
-    await mcpBacktestingClient.disconnect();
-  });
-
-  it('should list available strategies', async () => {
-    const strategies = await mcpBacktestingClient.listStrategies();
-    expect(strategies).toBeInstanceOf(Array);
-    expect(strategies.length).toBeGreaterThan(0);
-  });
-
-  it('should validate strategy configuration', async () => {
-    const validation = await mcpBacktestingClient.validateStrategy({
-      strategyId: 'sma_crossover',
-      parameters: {
-        fast_period: 10,
-        slow_period: 30,
-      },
-    });
-
-    expect(validation.valid).toBe(true);
-    expect(validation.errors).toHaveLength(0);
-  });
-
-  it('should run a backtest', async () => {
-    const result = await mcpBacktestingClient.runBacktest({
+// Test event-driven backtest execution
+describe('Event-Driven Backtesting', () => {
+  it('should complete backtest via events', async () => {
+    const params: BacktestParams = {
       strategyId: 'sma_crossover',
       assetSymbol: 'BTC',
       startDate: '2023-01-01T00:00:00Z',
       endDate: '2023-12-31T23:59:59Z',
       initialCapital: 10000,
-      parameters: {
-        fast_period: 10,
-        slow_period: 30,
-      },
+      parameters: { fast_period: 10, slow_period: 30 },
+    };
+
+    const startResult = await mcpBacktestingClient.runBacktest(params);
+
+    // Wait for completion event (not polling!)
+    const result = await mcpBacktestingClient.waitForBacktestCompletion(
+      startResult.backtestId
+    );
+
+    expect(result.status).toBe('completed');
+    expect(result.finalCapital).toBeGreaterThan(0);
+  });
+
+  it('should receive progress updates', (done) => {
+    const progressUpdates: number[] = [];
+
+    mcpBacktestingClient.on('backtest:progress', (event) => {
+      progressUpdates.push(event.progress);
+
+      if (event.progress === 100) {
+        expect(progressUpdates.length).toBeGreaterThan(1);
+        expect(progressUpdates).toContain(50); // Mid-point update
+        done();
+      }
     });
 
-    expect(result.backtestId).toBeDefined();
-    expect(result.status).toBe('running');
+    // Start backtest...
   });
 });
 ```
 
-## Environment Variables
+## Migration Path
 
-Add to `.env`:
+For existing code using polling:
 
-```bash
-# Python MCP Backtesting Server
-PYTHON_BACKTESTING_SERVER_PATH=./server/python-services/backtesting-mcp/main.py
-```
+1. Update `mcp-backtesting-client.ts` with EventEmitter
+2. Replace polling loops with `waitForBacktestCompletion()`
+3. Add event listeners for progress broadcasting
+4. Update Python server to emit notifications (Phase 2)
+5. Test event flow end-to-end
 
-## Next Steps
-
-1. Install MCP SDK: `npm install @modelcontextprotocol/sdk`
-2. Create type definitions
-3. Implement MCP client service
-4. Integrate with existing async worker service
-5. Add REST API routes
-6. Write tests
-7. Update server initialization
+This provides immediate benefits even before Python server emits real events (can emit mock events for testing).
