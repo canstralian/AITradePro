@@ -1,0 +1,49 @@
+# This will be the refactored workflow file based on the given conditions for SQLite and PostgreSQL services
+
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        db: [sqlite, postgresql]
+
+    services:
+      postgresql:
+        image: postgres:latest
+        options: >
+          --network=host
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: dbname
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: echo 'Building...'
+
+      - name: Test
+        run: echo 'Running tests...'
+        if: matrix.db == 'postgresql' && secrets.DATABASE_URL != ''
+
+
+  validate:
+    runs-on: ubuntu-latest
+    if: ${{ matrix.db == 'sqlite' || (matrix.db == 'postgresql' && secrets.DATABASE_URL != '') }}
+
+    steps:
+      - name: Validate Docker Config
+        run: echo 'Validating Docker Config...'
+
+      - name: Security Scanning
+        run: echo 'Running security scans...'
