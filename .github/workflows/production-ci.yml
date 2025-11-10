@@ -1,0 +1,339 @@
+name: Production CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_LTS: 'lts/*'
+  POSTGRES_USER: aiuser
+  POSTGRES_PASSWORD: aipass
+  POSTGRES_DB: aitradepro
+  DOCKER_IMAGE: aitradepro
+
+jobs:
+  lint_typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run TypeScript type checking
+        run: npm run check
+
+  security_audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: false
+      
+      - name: Run audit-ci (with config)
+        run: npm run audit
+        continue-on-error: false
+
+  test_sqlite:
+    name: Tests with SQLite (Development)
+    needs: [lint_typecheck]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18.x, 20.x, lts/*]
+    env:
+      DATABASE_URL: 'sqlite:./test.db'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Push DB schema (SQLite)
+        run: npm run db:push
+        env:
+          DATABASE_URL: 'sqlite:./test.db'
+      
+      - name: Run tests with SQLite
+        run: npm run test:run
+        env:
+          DATABASE_URL: 'sqlite:./test.db'
+
+  test_postgresql:
+    name: Tests with PostgreSQL (Production)
+    needs: [lint_typecheck]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18.x, 20.x, lts/*]
+        postgres: ['14-alpine', '15-alpine', '16-alpine']
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+          --health-start-period=10s
+    env:
+      DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ${{ env.POSTGRES_USER }}; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+      
+      - name: Verify PostgreSQL connection
+        run: |
+          PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT version();"
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Push DB schema (PostgreSQL)
+        run: npm run db:push
+      
+      - name: Run tests with PostgreSQL
+        run: npm run test:run
+      
+      - name: Generate test coverage (primary matrix only)
+        if: matrix.node == env.NODE_LTS && matrix.postgres == '16-alpine'
+        run: npm run test:coverage
+      
+      - name: Upload coverage artifact
+        if: matrix.node == env.NODE_LTS && matrix.postgres == '16-alpine'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-postgresql
+          path: coverage
+
+  docker_build:
+    name: Docker Build & Hadolint
+    needs: [lint_typecheck]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Run Hadolint (Dockerfile linter)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.DOCKER_IMAGE }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/${{ env.DOCKER_IMAGE }}.tar
+      
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/${{ env.DOCKER_IMAGE }}.tar
+          retention-days: 1
+
+  docker_security_scan:
+    name: Trivy Security Scan
+    needs: [docker_build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp
+      
+      - name: Load Docker image
+        run: docker load --input /tmp/${{ env.DOCKER_IMAGE }}.tar
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:test
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Run Trivy with SARIF output (for GitHub Security)
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:test
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          vuln-type: 'os,library'
+      
+      - name: Upload Trivy results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  coverage_report:
+    name: Coverage Report
+    needs: [test_postgresql]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-postgresql
+          path: coverage
+        continue-on-error: true
+      
+      - name: Upload to Codecov
+        if: hashFiles('coverage/lcov.info') != ''
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || '' }}
+          files: coverage/lcov.info
+          flags: all-tests
+          fail_ci_if_error: false
+          verbose: true
+
+  build_verification:
+    name: Production Build Verification
+    needs: [test_sqlite, test_postgresql, security_audit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --only=production
+      
+      - name: Verify production dependencies
+        run: |
+          echo "Checking for development dependencies in production..."
+          if npm ls --production --depth=0 | grep -E "jest|vitest|eslint|prettier"; then
+            echo "ERROR: Development dependencies found in production build"
+            exit 1
+          fi
+          echo "Production dependencies verified successfully"
+      
+      - name: Build for production
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "ERROR: dist directory not found"
+            exit 1
+          fi
+          if [ ! -f "dist/index.js" ]; then
+            echo "ERROR: dist/index.js not found"
+            exit 1
+          fi
+          echo "Build artifacts verified successfully"
+          ls -lh dist/
+
+  summary:
+    name: CI Pipeline Summary
+    needs: [lint_typecheck, security_audit, test_sqlite, test_postgresql, docker_build, docker_security_scan, build_verification]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "=== CI Pipeline Summary ==="
+          echo "Lint & Type Check: ${{ needs.lint_typecheck.result }}"
+          echo "Security Audit: ${{ needs.security_audit.result }}"
+          echo "SQLite Tests: ${{ needs.test_sqlite.result }}"
+          echo "PostgreSQL Tests: ${{ needs.test_postgresql.result }}"
+          echo "Docker Build: ${{ needs.docker_build.result }}"
+          echo "Docker Security Scan: ${{ needs.docker_security_scan.result }}"
+          echo "Build Verification: ${{ needs.build_verification.result }}"
+          
+          if [[ "${{ needs.lint_typecheck.result }}" != "success" ]] || \
+             [[ "${{ needs.security_audit.result }}" != "success" ]] || \
+             [[ "${{ needs.test_sqlite.result }}" != "success" ]] || \
+             [[ "${{ needs.test_postgresql.result }}" != "success" ]] || \
+             [[ "${{ needs.docker_build.result }}" != "success" ]] || \
+             [[ "${{ needs.docker_security_scan.result }}" != "success" ]] || \
+             [[ "${{ needs.build_verification.result }}" != "success" ]]; then
+            echo "=== CI PIPELINE FAILED ==="
+            exit 1
+          fi
+          echo "=== CI PIPELINE PASSED ==="

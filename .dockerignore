@@ -1,0 +1,81 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Testing
+coverage
+coverage-unit
+coverage-integration
+.nyc_output
+reports
+
+# Development
+*.log
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist
+build
+.cache
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+docs
+issues
+labels
+attached_assets
+
+# Config files
+.prettierrc
+.prettierrc.json
+.eslintrc*
+.lintstagedrc.json
+.husky
+tsconfig.json
+vitest.config.ts
+vite.config.ts
+postcss.config.js
+tailwind.config.ts
+components.json
+drizzle.config.ts
+eslint.config.js
+
+# Development files
+.replit
+.envrc
+.gemini
+replit.md
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+client/src/test
+
+# Database
+*.db
+*.db-journal
+dev.db
+
+# Migrations (optional - include if needed for runtime)
+# migrations

@@ -149,6 +149,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // REST API Routes
 
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   // Get all assets
   app.get('/api/assets', async (req, res) => {
     try {
