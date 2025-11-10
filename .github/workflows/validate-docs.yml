@@ -247,7 +247,7 @@ jobs:
             exit 1
           fi
 
-          if [ ! -d "client/dist" ]; then
+          if [ ! -d "dist/public" ]; then
             echo "❌ Client build output not found"
             exit 1
           fi
