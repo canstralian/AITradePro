@@ -1,5 +1,5 @@
-import { storage } from "../storage";
-import { WebSocket } from "ws";
+import { storage } from '../storage';
+import { WebSocket } from 'ws';
 
 export class AIAnalysisService {
   private analysisInterval: NodeJS.Timeout | null = null;
@@ -27,18 +27,18 @@ export class AIAnalysisService {
 
   private async generateInsights() {
     const assets = await storage.getAssets();
-    
+
     for (const asset of assets) {
       // Generate sentiment analysis
       if (Math.random() > 0.7) {
         await this.generateSentimentInsight(asset.id);
       }
-      
+
       // Generate pattern matching insight
       if (Math.random() > 0.8) {
         await this.generatePatternInsight(asset.id);
       }
-      
+
       // Generate news impact insight
       if (Math.random() > 0.9) {
         await this.generateNewsInsight(asset.id);
@@ -49,31 +49,34 @@ export class AIAnalysisService {
   private async generateSentimentInsight(assetId: string) {
     const sentiments = [
       {
-        title: "Market Sentiment",
-        description: "Strong accumulation detected. Whale activity increased significantly.",
+        title: 'Market Sentiment',
+        description:
+          'Strong accumulation detected. Whale activity increased significantly.',
         confidence: (80 + Math.random() * 15).toFixed(2),
-        metadata: { status: "Bullish", whaleActivity: "+34%" }
+        metadata: { status: 'Bullish', whaleActivity: '+34%' },
       },
       {
-        title: "Social Sentiment",
-        description: "Positive social media sentiment spike detected across platforms.",
+        title: 'Social Sentiment',
+        description:
+          'Positive social media sentiment spike detected across platforms.',
         confidence: (75 + Math.random() * 20).toFixed(2),
-        metadata: { status: "Positive", socialScore: "+23%" }
+        metadata: { status: 'Positive', socialScore: '+23%' },
       },
       {
-        title: "Market Fear Index",
-        description: "Fear index showing extreme greed territory, potential reversal signal.",
+        title: 'Market Fear Index',
+        description:
+          'Fear index showing extreme greed territory, potential reversal signal.',
         confidence: (70 + Math.random() * 25).toFixed(2),
-        metadata: { status: "Warning", fearIndex: "76" }
-      }
+        metadata: { status: 'Warning', fearIndex: '76' },
+      },
     ];
 
     const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
-    
+
     await storage.createInsight({
       id: `insight-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       assetId,
-      type: "sentiment",
+      type: 'sentiment',
       title: sentiment.title,
       description: sentiment.description,
       confidence: sentiment.confidence,
@@ -81,37 +84,47 @@ export class AIAnalysisService {
       isActive: true,
     });
 
-    this.broadcastInsight(assetId, "sentiment", sentiment);
+    this.broadcastInsight(assetId, 'sentiment', sentiment);
   }
 
   private async generatePatternInsight(assetId: string) {
     const patterns = [
       {
-        title: "Pattern Match",
-        description: "Similar to Oct 2020 breakout pattern. Expected target: $48,500",
+        title: 'Pattern Match',
+        description:
+          'Similar to Oct 2020 breakout pattern. Expected target: $48,500',
         confidence: (85 + Math.random() * 10).toFixed(2),
-        metadata: { pattern: "Bull Flag", target: "$48,500", similarity: "92%" }
+        metadata: {
+          pattern: 'Bull Flag',
+          target: '$48,500',
+          similarity: '92%',
+        },
       },
       {
-        title: "Technical Analysis",
-        description: "Double bottom formation confirmed. Strong support at current levels.",
+        title: 'Technical Analysis',
+        description:
+          'Double bottom formation confirmed. Strong support at current levels.',
         confidence: (78 + Math.random() * 15).toFixed(2),
-        metadata: { pattern: "Double Bottom", support: "Current", strength: "Strong" }
+        metadata: {
+          pattern: 'Double Bottom',
+          support: 'Current',
+          strength: 'Strong',
+        },
       },
       {
-        title: "Fibonacci Retracement",
-        description: "Price bouncing perfectly off 0.618 Fibonacci level.",
+        title: 'Fibonacci Retracement',
+        description: 'Price bouncing perfectly off 0.618 Fibonacci level.',
         confidence: (82 + Math.random() * 12).toFixed(2),
-        metadata: { level: "0.618", action: "Bounce", signal: "Bullish" }
-      }
+        metadata: { level: '0.618', action: 'Bounce', signal: 'Bullish' },
+      },
     ];
 
     const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-    
+
     await storage.createInsight({
       id: `insight-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       assetId,
-      type: "pattern",
+      type: 'pattern',
       title: pattern.title,
       description: pattern.description,
       confidence: pattern.confidence,
@@ -119,37 +132,41 @@ export class AIAnalysisService {
       isActive: true,
     });
 
-    this.broadcastInsight(assetId, "pattern", pattern);
+    this.broadcastInsight(assetId, 'pattern', pattern);
   }
 
   private async generateNewsInsight(assetId: string) {
     const newsInsights = [
       {
-        title: "News Impact",
-        description: "Positive ETF news correlation. Social sentiment up significantly.",
+        title: 'News Impact',
+        description:
+          'Positive ETF news correlation. Social sentiment up significantly.',
         confidence: (75 + Math.random() * 20).toFixed(2),
-        metadata: { impact: "Medium", correlation: "ETF", sentiment: "+23%" }
+        metadata: { impact: 'Medium', correlation: 'ETF', sentiment: '+23%' },
       },
       {
-        title: "Regulatory News",
-        description: "Positive regulatory developments in major markets detected.",
+        title: 'Regulatory News',
+        description:
+          'Positive regulatory developments in major markets detected.',
         confidence: (80 + Math.random() * 15).toFixed(2),
-        metadata: { impact: "High", type: "Regulatory", region: "Global" }
+        metadata: { impact: 'High', type: 'Regulatory', region: 'Global' },
       },
       {
-        title: "Institutional Activity",
-        description: "Increased institutional buying pressure from recent announcements.",
+        title: 'Institutional Activity',
+        description:
+          'Increased institutional buying pressure from recent announcements.',
         confidence: (85 + Math.random() * 10).toFixed(2),
-        metadata: { impact: "High", type: "Institutional", trend: "Buying" }
-      }
+        metadata: { impact: 'High', type: 'Institutional', trend: 'Buying' },
+      },
     ];
 
-    const newsInsight = newsInsights[Math.floor(Math.random() * newsInsights.length)];
-    
+    const newsInsight =
+      newsInsights[Math.floor(Math.random() * newsInsights.length)];
+
     await storage.createInsight({
       id: `insight-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       assetId,
-      type: "news",
+      type: 'news',
       title: newsInsight.title,
       description: newsInsight.description,
       confidence: newsInsight.confidence,
@@ -157,7 +174,7 @@ export class AIAnalysisService {
       isActive: true,
     });
 
-    this.broadcastInsight(assetId, "news", newsInsight);
+    this.broadcastInsight(assetId, 'news', newsInsight);
   }
 
   private broadcastInsight(assetId: string, type: string, insight: any) {
@@ -168,7 +185,7 @@ export class AIAnalysisService {
         insightType: type,
         ...insight,
         timestamp: new Date().toISOString(),
-      }
+      },
     });
 
     this.connectedClients.forEach(client => {
@@ -181,26 +198,26 @@ export class AIAnalysisService {
   async processNaturalLanguageQuery(query: string): Promise<string> {
     // Simple keyword-based response generation
     const lowerQuery = query.toLowerCase();
-    
+
     if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc')) {
       const btc = await storage.getAssetBySymbol('BTC');
       if (btc) {
         return `Bitcoin is currently trading at $${btc.currentPrice} with a 24h change of ${btc.priceChange24h}%. Our AI analysis shows strong accumulation patterns and bullish sentiment.`;
       }
     }
-    
+
     if (lowerQuery.includes('market') && lowerQuery.includes('trend')) {
-      return "Current market trends show strong bullish momentum across major cryptocurrencies. Bitcoin correlation with traditional markets has decreased, indicating crypto market maturity.";
+      return 'Current market trends show strong bullish momentum across major cryptocurrencies. Bitcoin correlation with traditional markets has decreased, indicating crypto market maturity.';
     }
-    
+
     if (lowerQuery.includes('pattern') || lowerQuery.includes('technical')) {
-      return "Technical analysis reveals a strong bull flag pattern formation. Historical pattern matching shows 89% similarity to previous breakout scenarios.";
+      return 'Technical analysis reveals a strong bull flag pattern formation. Historical pattern matching shows 89% similarity to previous breakout scenarios.';
     }
-    
+
     if (lowerQuery.includes('portfolio') || lowerQuery.includes('allocation')) {
-      return "Your current portfolio shows strong diversification with 45% Bitcoin, 25% Ethereum, and 30% in altcoins. Consider rebalancing based on current market conditions.";
+      return 'Your current portfolio shows strong diversification with 45% Bitcoin, 25% Ethereum, and 30% in altcoins. Consider rebalancing based on current market conditions.';
     }
-    
+
     // Default response
     return "Based on current market analysis, we're seeing positive sentiment across major assets. Would you like me to analyze a specific cryptocurrency or market trend?";
   }

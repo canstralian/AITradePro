@@ -1,5 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import { Position } from '@/types/trading';
 
 interface PortfolioChartProps {
@@ -17,18 +24,23 @@ export default function PortfolioChart({ positions }: PortfolioChartProps) {
   ];
 
   // Convert positions to chart data or use default
-  const chartData = positions.length > 0 
-    ? positions.map((position, index) => ({
-        name: position.symbol || 'Unknown',
-        value: parseFloat(position.totalValue) || 0,
-        color: defaultData[index % defaultData.length]?.color || 'hsl(215, 20%, 65%)',
-      }))
-    : defaultData;
+  const chartData =
+    positions.length > 0
+      ? positions.map((position, index) => ({
+          name: position.symbol || 'Unknown',
+          value: parseFloat(position.totalValue) || 0,
+          color:
+            defaultData[index % defaultData.length]?.color ||
+            'hsl(215, 20%, 65%)',
+        }))
+      : defaultData;
 
   return (
     <Card className="trading-panel panel-shadow">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          Portfolio Allocation
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-48">
@@ -52,14 +64,14 @@ export default function PortfolioChart({ positions }: PortfolioChartProps) {
                   backgroundColor: 'hsl(217, 33%, 17%)',
                   border: '1px solid hsl(217, 33%, 33%)',
                   borderRadius: '8px',
-                  color: 'hsl(210, 40%, 98%)'
+                  color: 'hsl(210, 40%, 98%)',
                 }}
                 formatter={(value: number) => [`${value}%`, 'Allocation']}
               />
               <Legend
                 wrapperStyle={{
                   fontSize: '12px',
-                  color: 'hsl(210, 40%, 98%)'
+                  color: 'hsl(210, 40%, 98%)',
                 }}
               />
             </PieChart>

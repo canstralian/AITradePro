@@ -1,7 +1,7 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { corsMiddleware } from "./middleware/cors";
+import express, { type Request, Response, NextFunction } from 'express';
+import { registerRoutes } from './routes';
+import { setupVite, serveStatic, log } from './vite';
+import { corsMiddleware } from './middleware/cors';
 
 const app = express();
 app.set('trust proxy', true); // Trust proxy for rate limiting
@@ -22,16 +22,16 @@ app.use((req, res, next) => {
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (path.startsWith('/api')) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
       if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+        logLine = logLine.slice(0, 79) + '…';
       }
 
       log(logLine);
@@ -46,28 +46,31 @@ app.use((req, res, next) => {
 
   app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     const status = (err as any)?.status || (err as any)?.statusCode || 500;
-    const message = (err as any)?.message || "Internal Server Error";
-    
+    const message = (err as any)?.message || 'Internal Server Error';
+
     // Log the error with more details
     log(`Error ${status}: ${message} - ${req.method} ${req.path}`);
-    
+
     // Log stack trace in development
     if (process.env.NODE_ENV === 'development' && (err as any)?.stack) {
       console.error((err as any).stack);
     }
-    
+
     // Only send response if not already sent
     if (!res.headersSent) {
-      const response: any = { 
-        message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : message,
-        status
+      const response: any = {
+        message:
+          process.env.NODE_ENV === 'production'
+            ? 'Internal Server Error'
+            : message,
+        status,
       };
-      
+
       // Include stack trace in development only
       if (process.env.NODE_ENV === 'development' && (err as any)?.stack) {
         response.stack = (err as any).stack;
       }
-      
+
       res.status(status).json(response);
     }
   });
@@ -75,7 +78,7 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  if (app.get('env') === 'development') {
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -86,11 +89,14 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+      host: '0.0.0.0',
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();

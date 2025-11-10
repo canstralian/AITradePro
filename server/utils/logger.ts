@@ -6,8 +6,8 @@ interface LogLevel {
 
 const LOG_LEVELS: Record<string, LogLevel> = {
   ERROR: { level: 0, name: 'ERROR', color: '\x1b[31m' }, // Red
-  WARN: { level: 1, name: 'WARN', color: '\x1b[33m' },  // Yellow
-  INFO: { level: 2, name: 'INFO', color: '\x1b[36m' },  // Cyan
+  WARN: { level: 1, name: 'WARN', color: '\x1b[33m' }, // Yellow
+  INFO: { level: 2, name: 'INFO', color: '\x1b[36m' }, // Cyan
   DEBUG: { level: 3, name: 'DEBUG', color: '\x1b[90m' }, // Gray
 };
 
@@ -29,29 +29,34 @@ class Logger {
 
   private formatMessage(level: LogLevel, message: string, meta?: any): string {
     const timestamp = new Date().toISOString();
-    const levelStr = this.isDevelopment && level.color 
-      ? `${level.color}${level.name}${RESET_COLOR}`
-      : level.name;
-    
+    const levelStr =
+      this.isDevelopment && level.color
+        ? `${level.color}${level.name}${RESET_COLOR}`
+        : level.name;
+
     let formatted = `[${timestamp}] ${levelStr}: ${message}`;
-    
+
     if (meta && typeof meta === 'object') {
       formatted += ` ${JSON.stringify(meta, null, 2)}`;
     } else if (meta) {
       formatted += ` ${String(meta)}`;
     }
-    
+
     return formatted;
   }
 
   private log(level: LogLevel, message: string, meta?: any): void {
-    if (!this.shouldLog(level)) return;
-    
+    if (!this.shouldLog(level)) {
+      return;
+    }
+
     const formatted = this.formatMessage(level, message, meta);
-    
-    if (level.level === 0) { // ERROR
+
+    if (level.level === 0) {
+      // ERROR
       console.error(formatted);
-    } else if (level.level === 1) { // WARN
+    } else if (level.level === 1) {
+      // WARN
       console.warn(formatted);
     } else {
       console.log(formatted);
@@ -75,9 +80,15 @@ class Logger {
   }
 
   // Convenience method for API logging
-  apiLog(method: string, path: string, statusCode: number, duration: number, response?: any): void {
+  apiLog(
+    method: string,
+    path: string,
+    statusCode: number,
+    duration: number,
+    response?: any
+  ): void {
     const message = `${method} ${path} ${statusCode} in ${duration}ms`;
-    
+
     if (statusCode >= 500) {
       this.error(message, { response });
     } else if (statusCode >= 400) {

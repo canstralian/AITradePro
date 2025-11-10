@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - Environment variables configured
 - SSL certificate for production
@@ -85,12 +85,14 @@ The application provides these endpoints for monitoring:
 ## Performance Tuning
 
 ### Database
+
 - Configure connection pooling
 - Set up read replicas if needed
 - Monitor query performance
 - Set up database indexing
 
 ### Application
+
 - Enable gzip compression
 - Configure caching headers
 - Monitor memory usage
@@ -99,6 +101,7 @@ The application provides these endpoints for monitoring:
 ## Monitoring
 
 Set up monitoring for:
+
 - Application logs
 - Database performance
 - API response times

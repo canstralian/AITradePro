@@ -12,7 +12,8 @@ export default function NewsFeed({ news }: NewsFeedProps) {
     {
       id: '1',
       title: 'Bitcoin ETF Approval Expected Soon',
-      summary: 'Market analysts predict potential approval could drive BTC to new highs...',
+      summary:
+        'Market analysts predict potential approval could drive BTC to new highs...',
       source: 'CoinDesk',
       impact: 'high',
       sentiment: 'positive',
@@ -22,7 +23,8 @@ export default function NewsFeed({ news }: NewsFeedProps) {
     {
       id: '2',
       title: 'Ethereum Layer 2 Adoption Surges',
-      summary: 'Transaction volume on L2 networks increased 340% this quarter...',
+      summary:
+        'Transaction volume on L2 networks increased 340% this quarter...',
       source: 'The Block',
       impact: 'medium',
       sentiment: 'positive',
@@ -46,10 +48,16 @@ export default function NewsFeed({ news }: NewsFeedProps) {
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours === 1) return '1 hour ago';
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) {
+      return 'Just now';
+    }
+    if (diffInHours === 1) {
+      return '1 hour ago';
+    }
     return `${diffInHours} hours ago`;
   };
 
@@ -63,8 +71,11 @@ export default function NewsFeed({ news }: NewsFeedProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3 max-h-48 overflow-y-auto scrollbar-thin">
-          {displayNews.map((item) => (
-            <div key={item.id} className="border-b border-trading-border pb-3 last:border-0">
+          {displayNews.map(item => (
+            <div
+              key={item.id}
+              className="border-b border-trading-border pb-3 last:border-0"
+            >
               <h4 className="text-sm font-medium mb-1">{item.title}</h4>
               <p className="text-xs trading-muted mb-2">{item.summary}</p>
               <div className="flex justify-between text-xs trading-muted">

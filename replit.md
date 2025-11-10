@@ -11,6 +11,7 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### July 26, 2025 - Application Debugging and Fixes
+
 - ✅ Fixed all TypeScript compilation errors in server components
 - ✅ Resolved database connection and schema issues
 - ✅ Fixed WorkerTask type incompatibilities in storage layer
@@ -22,6 +23,7 @@ Preferred communication style: Simple, everyday language.
 - ✅ Database seeded with sample trading data and AI insights
 
 ### July 26, 2025 - Testing and CI/CD Pipeline Setup
+
 - ✅ Added comprehensive testing framework with Vitest
 - ✅ Created unit tests for React components and backend services
 - ✅ Configured ESLint and Prettier for code quality
@@ -34,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
+
 - **Framework**: React 18 with TypeScript and Vite for fast development
 - **UI Components**: Shadcn/ui with Radix UI primitives for consistent, accessible components
 - **Styling**: Tailwind CSS with a custom dark theme optimized for trading interfaces
@@ -42,6 +45,7 @@ Preferred communication style: Simple, everyday language.
 - **Real-time Communication**: WebSocket integration for live market data and AI insights
 
 ### Backend Architecture
+
 - **Runtime**: Node.js with Express.js server
 - **Language**: TypeScript with ES modules
 - **WebSocket Server**: ws library for real-time bidirectional communication
@@ -50,6 +54,7 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Hot reload with Vite integration
 
 ### Database Layer
+
 - **ORM**: Drizzle ORM for type-safe database interactions
 - **Database**: PostgreSQL with Neon serverless hosting
 - **Schema Design**: Comprehensive trading-focused schema including users, assets, positions, trades, AI insights, news, and market data
@@ -58,12 +63,14 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Real-time Market Data System
+
 - **Market Data Service**: Generates realistic price movements with asset-specific volatility
 - **WebSocket Broadcasting**: Pushes live price updates to all connected clients
 - **Data Storage**: Historical market data tracking with efficient indexing
 - **Price Simulation**: Sophisticated price generation mimicking real market behavior
 
 ### AI Analysis Engine
+
 - **AI Analysis Service**: Generates sentiment analysis, pattern matching, and news impact insights
 - **RAG Technology**: Vector-based contextual analysis correlating market movements with news, social media, and on-chain data
 - **Natural Language Processing**: Handles user queries and provides contextual responses with enhanced RAG analysis
@@ -73,12 +80,14 @@ Preferred communication style: Simple, everyday language.
 - **Real-time Distribution**: WebSocket delivery of AI insights and worker results to connected clients
 
 ### Trading Interface
+
 - **Dashboard**: Comprehensive trading dashboard with portfolio overview, price charts, and market data
 - **Portfolio Management**: Real-time position tracking, P&L calculations, and asset allocation visualization
 - **Order Book**: Live order book display with bid/ask spreads
 - **Trade History**: Complete trade execution history with filtering and analysis
 
 ### UI Component System
+
 - **Design System**: Consistent trading-themed components using Shadcn/ui with Bloomberg Terminal-inspired dark theme
 - **Chart Integration**: Recharts for data visualization including price charts and portfolio allocation
 - **Enhanced Components**: RAG Analysis interface for contextual queries and Worker Queue management panel
@@ -90,6 +99,7 @@ Preferred communication style: Simple, everyday language.
 ## Data Flow
 
 ### Real-time Data Pipeline
+
 1. **Data Generation**: Market data service simulates realistic price movements
 2. **Storage**: New data points stored in PostgreSQL with timestamp indexing
 3. **Broadcasting**: WebSocket server pushes updates to all connected clients
@@ -97,6 +107,7 @@ Preferred communication style: Simple, everyday language.
 5. **State Management**: TanStack Query manages caching and synchronization
 
 ### AI Insight Pipeline
+
 1. **Analysis Triggers**: Automated analysis based on market conditions and time intervals
 2. **Insight Generation**: AI service creates sentiment, pattern, and news-based insights
 3. **Storage**: Insights stored with confidence scores and metadata
@@ -104,6 +115,7 @@ Preferred communication style: Simple, everyday language.
 5. **UI Integration**: Insights displayed in dedicated components with confidence indicators
 
 ### User Interaction Flow
+
 1. **Authentication**: User session management with secure token handling
 2. **Dashboard Loading**: Initial data fetch via REST APIs with caching
 3. **WebSocket Connection**: Establishes real-time connection for live updates
@@ -113,6 +125,7 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Core Dependencies
+
 - **@neondatabase/serverless**: Neon PostgreSQL serverless connection
 - **drizzle-orm & drizzle-zod**: Type-safe ORM with Zod validation
 - **@tanstack/react-query**: Server state management and caching
@@ -122,18 +135,21 @@ Preferred communication style: Simple, everyday language.
 - **jsonwebtoken**: Secure authentication and authorization
 
 ### Security & Performance
+
 - **express-rate-limit**: Protection against API abuse and DDoS
 - **Security middleware**: XSS protection, CSRF prevention, secure headers
 - **Input validation**: Symbol validation and SQL injection prevention
 - **Async processing**: Worker queue system for heavy computational tasks
 
 ### UI Dependencies
-- **@radix-ui/***: Accessible UI primitives for complex components
+
+- **@radix-ui/\***: Accessible UI primitives for complex components
 - **tailwindcss**: Utility-first CSS framework
 - **class-variance-authority**: Component variant management
 - **lucide-react**: Modern icon library
 
 ### Development Dependencies
+
 - **tsx**: TypeScript execution for development
 - **esbuild**: Fast bundling for production builds
 - **vite**: Development server and build tool
@@ -141,18 +157,21 @@ Preferred communication style: Simple, everyday language.
 ## Deployment Strategy
 
 ### Development Environment
+
 - **Local Development**: Vite dev server with hot reload and error overlay
 - **Database**: Neon PostgreSQL with connection pooling
 - **Environment Variables**: DATABASE_URL for database connection
 - **WebSocket**: Development WebSocket server integrated with Vite
 
 ### Production Build
+
 - **Client Build**: Vite production build with optimized bundling
 - **Server Build**: esbuild compilation to ES modules
 - **Static Assets**: Client build served from Express static middleware
 - **Process Management**: Single Node.js process handling both HTTP and WebSocket
 
 ### Database Management
+
 - **Schema Migrations**: Drizzle Kit push strategy for schema updates
 - **Connection Management**: Serverless PostgreSQL with automatic scaling
 - **Data Persistence**: Full ACID compliance with PostgreSQL

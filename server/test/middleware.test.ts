@@ -1,16 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
+// Global type declarations for Node.js environment
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
-import { authenticateToken, generateToken } from '../middleware/auth';
-import { validateSchema, sanitizeInput, schemas } from '../middleware/validation';
+import {
+  validateSchema,
+  sanitizeInput,
+  schemas,
+} from '../middleware/validation';
 import { helmetMiddleware } from '../middleware/helmet';
 import jwt from 'jsonwebtoken';
-
-// Mock environment
-process.env.JWT_SECRET = 'test-secret-key';
+import { authenticateToken, generateToken } from '../middleware/auth';
 
 describe('Auth Middleware', () => {
   const mockNext = vi.fn() as NextFunction;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -20,35 +26,41 @@ describe('Auth Middleware', () => {
       const req = { headers: {} } as Request;
       const res = {
         status: vi.fn().mockReturnThis(),
-        json: vi.fn()
+        json: vi.fn(),
       } as unknown as Response;
 
       authenticateToken(req, res, mockNext);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Authorization header required' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Authorization header required',
+      });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
     it('should reject invalid authorization format', () => {
-      const req = { headers: { authorization: 'InvalidFormat token' } } as Request;
+      const req = {
+        headers: { authorization: 'InvalidFormat token' },
+      } as Request;
       const res = {
         status: vi.fn().mockReturnThis(),
-        json: vi.fn()
+        json: vi.fn(),
       } as unknown as Response;
 
       authenticateToken(req, res, mockNext);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Invalid authorization format. Use Bearer <token>' });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 'Invalid authorization format. Use Bearer <token>',
+      });
     });
 
     it('should accept valid JWT token', () => {
       const user = { id: 'user1', username: 'testuser' };
       const token = generateToken(user);
-      
-      const req = { 
-        headers: { authorization: `Bearer ${token}` }
+
+      const req = {
+        headers: { authorization: `Bearer ${token}` },
       } as Request;
       const res = {} as Response;
 
@@ -63,10 +75,13 @@ describe('Auth Middleware', () => {
     it('should generate valid JWT token', () => {
       const user = { id: 'user1', username: 'testuser' };
       const token = generateToken(user);
-      
+
       expect(token).toBeTruthy();
-      
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+        userId: string;
+        username: string;
+      };
       expect(decoded.userId).toBe(user.id);
       expect(decoded.username).toBe(user.username);
     });
@@ -75,7 +90,7 @@ describe('Auth Middleware', () => {
 
 describe('Validation Middleware', () => {
   const mockNext = vi.fn() as NextFunction;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -85,9 +100,9 @@ describe('Validation Middleware', () => {
       const req = {
         body: {
           name: '<script>alert("xss")</script>Test',
-          data: ['<img src=x onerror=alert(1)>', 'clean data']
+          data: ['<img src=x onerror=alert(1)>', 'clean data'],
         },
-        query: {}
+        query: {},
       } as Request;
       const res = {} as Response;
 
@@ -105,8 +120,8 @@ describe('Validation Middleware', () => {
       const req = {
         params: { id: 'BTC' },
         body: {},
-        query: {}
-      } as Request;
+        query: {},
+      } as unknown as Request;
       const res = {} as Response;
 
       const middleware = validateSchema(schemas.assetParams);
@@ -119,11 +134,11 @@ describe('Validation Middleware', () => {
       const req = {
         params: { id: 'invalid_symbol_123!' },
         body: {},
-        query: {}
-      } as Request;
+        query: {},
+      } as unknown as Request;
       const res = {
         status: vi.fn().mockReturnThis(),
-        json: vi.fn()
+        json: vi.fn(),
       } as unknown as Response;
 
       const middleware = validateSchema(schemas.assetParams);
@@ -140,15 +155,21 @@ describe('Helmet Middleware', () => {
     const req = {} as Request;
     const res = {
       setHeader: vi.fn(),
-      removeHeader: vi.fn()
+      removeHeader: vi.fn(),
     } as unknown as Response;
     const mockNext = vi.fn() as NextFunction;
 
     helmetMiddleware(req, res, mockNext);
 
-    expect(res.setHeader).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff');
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'X-Content-Type-Options',
+      'nosniff'
+    );
     expect(res.setHeader).toHaveBeenCalledWith('X-Frame-Options', 'DENY');
-    expect(res.setHeader).toHaveBeenCalledWith('X-XSS-Protection', '1; mode=block');
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'X-XSS-Protection',
+      '1; mode=block'
+    );
     expect(res.removeHeader).toHaveBeenCalledWith('X-Powered-By');
     expect(mockNext).toHaveBeenCalled();
   });

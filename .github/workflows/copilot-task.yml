@@ -1,6 +1,6 @@
 name: Copilot Task
 description: Create a task for Copilot to work on as a coding agent
-labels: ["copilot-candidate"]
+labels: ['copilot-candidate']
 body:
   - type: markdown
     attributes:
@@ -28,7 +28,7 @@ body:
     attributes:
       label: Task Summary
       description: Short description of what Copilot should do
-      placeholder: "Fix the login form bug that prevents submit when password field is empty"
+      placeholder: 'Fix the login form bug that prevents submit when password field is empty'
 
   - type: textarea
     id: acceptance_criteria
@@ -54,4 +54,4 @@ body:
     attributes:
       label: Additional Notes
       description: Any extra guidance, links, or clarifications
-      placeholder: "Follow project linting rules in .eslintrc and ensure accessibility compliance"
+      placeholder: 'Follow project linting rules in .eslintrc and ensure accessibility compliance'

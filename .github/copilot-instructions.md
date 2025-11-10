@@ -1,8 +1,8 @@
-# GitHub Copilot Coding Agent Instructions
+# AI Coding Agent Instructions for AITradePro
 
 ## Project Overview
 
-**AI Trading Platform** is a comprehensive real-time trading platform built with modern React/TypeScript frontend and Node.js/Express backend. The platform provides AI-powered market analysis, real-time data streaming via WebSockets, and a professional trading interface inspired by Bloomberg Terminal.
+**AITradePro** is a comprehensive real-time AI-enhanced trading platform built with modern React/TypeScript frontend and Node.js/Express backend. The platform provides AI-powered market analysis, real-time data streaming via WebSockets, and a professional trading interface inspired by Bloomberg Terminal.
 
 ## High-Level Repository Information
 
@@ -14,6 +14,28 @@
 - **Database**: PostgreSQL (primary) with SQLite fallback via Drizzle ORM
 - **Testing**: Vitest + React Testing Library
 - **Runtime**: Node.js LTS (18.x+)
+
+## Architecture Overview
+
+AITradePro uses a **service-oriented backend** with **React frontend**. Key architectural patterns:
+
+### Backend Services (`server/services/`)
+- **MarketDataService**: Generates realistic price movements every 3 seconds, broadcasts via WebSocket
+- **AIAnalysisService**: Creates AI insights (sentiment, patterns, news) every 30 seconds
+- **VectorStoreService**: Implements RAG (Retrieval-Augmented Generation) for contextual analysis
+- **AsyncWorkerService**: Priority-based task queuing for heavy AI computations
+
+### Real-time Communication
+- **WebSocket** at `/ws` handles all real-time updates
+- **Message types**: `price_update`, `ai_insight`, `ai_query`, `enqueue_analysis`, `task_queued`
+- Services automatically register WebSocket clients and clean up on disconnect
+
+### Data Flow
+```
+Market Data Service → PostgreSQL → WebSocket → React Components
+AI Analysis Service → Vector Store → RAG Analysis → WebSocket
+Async Workers → Priority Queue → Background Processing → Results
+```
 
 ## Essential Build & Validation Steps
 
@@ -45,51 +67,38 @@ npm install --legacy-peer-deps
    # CRITICAL: Fix TypeScript errors before proceeding
    ```
 
-3. **Linting** (currently broken - needs migration):
+3. **Database Setup**:
    ```bash
-   # BROKEN: ESLint 9.x config format issue
-   # Error: "ESLint couldn't find an eslint.config.(js|mjs|cjs) file"
-   # Current .eslintrc.json uses old format
-   # Workaround: Skip linting or manually migrate config
+   npm run db:push  # Applies Drizzle schema changes to PostgreSQL
    ```
 
-4. **Build** (tests production readiness):
+4. **Development Server**:
    ```bash
-   npm run build
+   npm run dev  # Uses tsx for hot reload, serves on PORT env var (default 5000)
+   ```
+
+5. **Build** (tests production readiness):
+   ```bash
+   npm run build  # esbuild bundles server + Vite builds client
    # Time: ~30-60 seconds
-   # CRITICAL: Currently fails due to variable redeclaration in server/db.ts
-   # Client build succeeds, server build fails on 'db' variable conflict
    ```
 
-5. **Testing** (with environment variables):
+6. **Testing**:
    ```bash
-   # Set JWT_SECRET to avoid test failures
-   JWT_SECRET=test-secret npm run test:run
-   # Time: ~10-30 seconds
-   # Currently fails due to missing dependencies and config issues
+   npm run test:ui  # Visual test runner with Vitest UI
+   npm run test:coverage  # Coverage reports in coverage/ directory
+   JWT_SECRET=test-secret npm run test:run  # Run all tests
    ```
 
-6. **Database Operations**:
+7. **Production Start**:
    ```bash
-   npm run db:push  # Apply schema changes
-   # Requires valid DATABASE_URL in .env
+   npm run start  # NODE_ENV=production node dist/index.js
    ```
 
 ## Critical Known Issues & Workarounds
 
 ### Build Issues
-1. **CRITICAL: Database Variable Redeclaration** ⚠️:
-   - File: `server/db.ts` lines 12 and 73
-   - Problem: Variable `db` declared twice causing build/dev server failure
-   - Impact: Prevents `npm run dev`, `npm run build`, and all tests from working
-   - Must fix this before any server-side development
-
-2. **App.tsx Missing Default Export** (FIXED):
-   - File: `client/src/App.tsx` 
-   - Problem: Function component `App` not exported as default
-   - Fix: Add `export default App;` at end of file
-
-3. **Vite Dependency Conflicts**:
+1. **Vite Dependency Conflicts**:
    - Use `--legacy-peer-deps` for all npm operations
    - @types/node version mismatch with Vite 7.x
 
@@ -98,19 +107,11 @@ npm install --legacy-peer-deps
    - Tests require `JWT_SECRET` environment variable
    - Set before running tests: `JWT_SECRET=test-secret npm test`
 
-2. **Missing Testing Dependencies**:
-   - `@testing-library/dom` missing from package.json
-   - `screen` import failing in test files
-
 ### Database Issues
 1. **Dual Schema System**:
    - Uses `shared/schema.ts` for PostgreSQL
    - Uses `shared/schema-sqlite.ts` for SQLite
    - Database detection based on DATABASE_URL format
-
-2. **Type Conflicts**:
-   - `server/db.ts` has variable redeclaration issues
-   - Union type problems between PostgreSQL and SQLite schemas
 
 ## Project Architecture & Layout
 
@@ -141,39 +142,125 @@ npm install --legacy-peer-deps
 
 ### Configuration Files
 - `vite.config.ts` - Frontend build configuration
-- `vitest.config.ts` - Test configuration 
+- `vitest.config.ts` - Test configuration
 - `tsconfig.json` - TypeScript configuration
 - `tailwind.config.ts` - TailwindCSS styling
 - `drizzle.config.ts` - Database ORM configuration
-- `.eslintrc.json` - Linting rules (needs migration to ESLint 9.x format)
+- `eslint.config.js` - Linting rules (ESLint 9.x format)
 - `.prettierrc.json` - Code formatting rules
 
 ### Key Source Files
-- `client/src/App.tsx` - Main React application (**FIXED: DEFAULT EXPORT ADDED**)
+- `client/src/App.tsx` - Main React application
 - `client/src/main.tsx` - React DOM entry point
 - `server/index.ts` - Express server entry point
 - `server/routes.ts` - API routes and WebSocket setup
-- `server/db.ts` - Database connection setup (**CRITICAL: HAS VARIABLE REDECLARATION BUG**)
+- `server/db.ts` - Database connection setup
 - `shared/schema.ts` - Database schema definitions
+
+## Project-Specific Patterns
+
+### WebSocket Integration
+**Client-side**: Use `useWebSocket` hook with subscription pattern:
+```tsx
+const { subscribe, sendMessage } = useWebSocket();
+const unsubscribe = subscribe('price_update', (data) => {
+  // Handle price updates
+});
+```
+
+**Server-side**: Services extend WebSocket clients automatically:
+```typescript
+addClient(ws: WebSocket) {
+  this.connectedClients.add(ws);
+  ws.on('close', () => this.connectedClients.delete(ws));
+}
+```
+
+### Service Registration
+All services register with WebSocket server in `server/routes.ts`:
+```typescript
+marketDataService.addClient(ws);
+aiAnalysisService.addClient(ws);
+asyncWorkerService.addClient(ws);
+```
+
+### Database Schema
+Shared schemas in `shared/schema.ts` using Drizzle ORM with Zod validation:
+```typescript
+export const assets = pgTable('assets', {
+  currentPrice: decimal('current_price', { precision: 15, scale: 8 }),
+  // ...
+});
+```
+
+### Error Handling
+**Backend**: Express error middleware logs and responds with structured errors
+**Frontend**: `ErrorBoundary` component wraps the entire app
+
+### API Patterns
+- REST endpoints under `/api/` with rate limiting
+- Combined dashboard endpoint `/api/dashboard` for initial data load
+- WebSocket for real-time updates, REST for historical/queries
+
+### Component Structure
+Trading components in `client/src/components/trading/` follow dashboard layout:
+- `main-dashboard.tsx` - Central trading interface
+- `sidebar.tsx` - Navigation and quick actions
+- `header.tsx` - Top navigation with system status
+
+### State Management
+- **TanStack Query** for server state (`useQuery`, `useMutation`)
+- **React state** for WebSocket real-time data
+- **Custom hooks** for reusable logic (`use-mobile.tsx`, `use-websocket.tsx`)
+
+## Key Files to Reference
+
+- `server/routes.ts` - WebSocket + REST API setup, service initialization
+- `server/services/market-data.ts` - Real-time price generation pattern
+- `client/src/hooks/use-websocket.tsx` - WebSocket subscription pattern
+- `shared/schema.ts` - Database schema and Zod validation
+- `server/services/async-workers.ts` - Priority queue implementation
+- `client/src/types/trading.ts` - TypeScript interfaces for all data structures
+
+## Common Gotchas
+
+- **WebSocket cleanup**: Always check `ws.readyState === WebSocket.OPEN` before sending
+- **Database precision**: Use appropriate decimal precision (price: 15,8; volume: 20,2)
+- **Service lifecycle**: Call `service.start()` after database initialization
+- **Environment variables**: `NODE_ENV`, `PORT`, `DATABASE_URL` are critical
+- **Mock data**: Services generate realistic mock data for development/demo
 
 ## Continuous Integration
 
-### GitHub Actions Pipeline (Incomplete)
-The current CI workflow in `.github/workflows/ci.yml` is incomplete and references missing jobs:
-
-- Missing `lint_typecheck` job that other jobs depend on
-- References Jest configuration files that don't exist
-- Uses outdated testing setup
+### GitHub Actions Pipeline
+The CI workflow in `.github/workflows/ci.yml` includes:
+- Type checking and linting
+- Test suite with PostgreSQL integration
+- Matrix testing across Node versions
 
 ### Pre-commit Hooks
 - Husky pre-commit hook runs `npm run lint` and `npm run check`
-- Currently broken due to ESLint configuration issues
+- Lint-staged for formatting staged files
+
+## Testing Patterns
+
+- **Vitest** with jsdom for React components
+- **Supertest** for API endpoint testing
+- Coverage excludes config files and test directories
+- Integration tests use PostgreSQL service in CI
+
+## Deployment Notes
+
+- Single port serves both API and client (Vite dev server proxies API in development)
+- PostgreSQL required for production (SQLite fallback in dev)
+- Environment variables control service behavior
+- CI runs matrix testing across Node versions with PostgreSQL integration
 
 ## Validation Steps for Code Changes
 
 1. **Always run type checking first**: `npm run check`
 2. **Fix TypeScript errors before proceeding**
-3. **Test build process**: `npm run build` 
+3. **Test build process**: `npm run build`
 4. **Run tests with environment**: `JWT_SECRET=test-secret npm run test:run`
 5. **Manual smoke test**: Start dev server with `npm run dev`
 
@@ -187,44 +274,7 @@ The current CI workflow in `.github/workflows/ci.yml` is incomplete and referenc
 - **Authentication**: JWT-based auth with session middleware
 - **Security**: Helmet, CORS, rate limiting middleware
 
-## File Listings
-
-### Repository Root Files
-```
-.env.example              # Environment variables template
-.eslintrc.json           # ESLint configuration (needs migration)
-.gitignore               # Git ignore rules
-.husky/                  # Git hooks
-.lintstagedrc.json       # Lint-staged configuration
-.prettierrc.json         # Prettier formatting rules
-DEPLOYMENT.md            # Deployment documentation
-LICENSE                  # MIT license
-README.md                # Project documentation
-SECURITY.md              # Security policies
-TESTING.md               # Testing documentation
-audit-ci.json           # Security audit configuration
-components.json         # Shadcn/ui component configuration
-drizzle.config.ts       # Database configuration
-package.json            # Dependencies and scripts
-postcss.config.js       # PostCSS configuration
-replit.md               # Replit-specific documentation
-tailwind.config.ts      # TailwindCSS configuration
-tsconfig.json           # TypeScript configuration
-vite.config.ts          # Vite build configuration
-vitest.config.ts        # Test configuration
-```
-
-### Critical Implementation Notes
-
-- **Database Connection**: Uses connection pooling with Neon PostgreSQL in production
-- **WebSocket Integration**: Real-time market data and AI insights via `/ws` endpoint
-- **Build Output**: Client builds to `dist/public/`, server builds to `dist/`
-- **Path Aliases**: `@/` maps to `client/src/`, `@shared/` maps to `shared/`
-- **Environment Detection**: Automatically switches between PostgreSQL and SQLite based on DATABASE_URL
-
 ## Agent Instructions
-
-**CRITICAL PROJECT STATE**: The repository currently has a blocking bug in `server/db.ts` (variable redeclaration) that prevents the dev server, build process, and tests from working properly. This must be fixed before any meaningful development can occur.
 
 **TRUST THESE INSTRUCTIONS** - Only search for additional information if:
 1. The instructions are incomplete for your specific task

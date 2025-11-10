@@ -11,11 +11,13 @@ export default function MarketCorrelation() {
   return (
     <Card className="trading-panel panel-shadow">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Market Correlation</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          Market Correlation
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {correlations.map((correlation) => (
+          {correlations.map(correlation => (
             <div key={correlation.pair} className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm">{correlation.pair}</span>
@@ -25,10 +27,7 @@ export default function MarketCorrelation() {
                   </span>
                 </div>
               </div>
-              <Progress 
-                value={correlation.value} 
-                className="h-2"
-              />
+              <Progress value={correlation.value} className="h-2" />
             </div>
           ))}
         </div>

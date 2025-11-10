@@ -22,15 +22,20 @@ interface ContextualAnalysis {
 
 export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
   const [query, setQuery] = useState('');
-  const [analysisResult, setAnalysisResult] = useState<ContextualAnalysis | null>(null);
+  const [analysisResult, setAnalysisResult] =
+    useState<ContextualAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const performRAGAnalysis = async () => {
-    if (!query.trim()) return;
-    
+    if (!query.trim()) {
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
-      const response = await fetch(`/api/rag-analysis/${symbol}?query=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `/api/rag-analysis/${symbol}?query=${encodeURIComponent(query)}`
+      );
       const data = await response.json();
       setAnalysisResult(data.analysis);
     } catch (error) {
@@ -41,8 +46,12 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
   };
 
   const getSentimentColor = (score: number) => {
-    if (score >= 70) return 'trading-secondary';
-    if (score >= 40) return 'text-yellow-500';
+    if (score >= 70) {
+      return 'trading-secondary';
+    }
+    if (score >= 40) {
+      return 'text-yellow-500';
+    }
     return 'trading-accent';
   };
 
@@ -60,12 +69,12 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <Input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
               placeholder={`Ask about ${symbol} market context...`}
               className="flex-1 trading-panel border-trading-border text-sm"
-              onKeyPress={(e) => e.key === 'Enter' && performRAGAnalysis()}
+              onKeyPress={e => e.key === 'Enter' && performRAGAnalysis()}
             />
-            <Button 
+            <Button
               onClick={performRAGAnalysis}
               disabled={isAnalyzing || !query.trim()}
               className="bg-trading-primary hover:bg-blue-700 w-full sm:w-auto"
@@ -89,32 +98,44 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
                   <TrendingUp className="w-4 h-4 mr-2 trading-primary" />
                   Market Context
                 </h4>
-                <p className="text-sm trading-muted">{analysisResult.marketContext}</p>
+                <p className="text-sm trading-muted">
+                  {analysisResult.marketContext}
+                </p>
               </div>
 
               {/* Correlation Scores */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="trading-bg rounded-lg p-3">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">News Correlation</span>
+                    <span className="text-sm font-medium">
+                      News Correlation
+                    </span>
                     <Badge variant="secondary" className="text-xs">
                       {analysisResult.newsCorrelation}%
                     </Badge>
                   </div>
-                  <Progress value={analysisResult.newsCorrelation} className="h-2" />
+                  <Progress
+                    value={analysisResult.newsCorrelation}
+                    className="h-2"
+                  />
                 </div>
 
                 <div className="trading-bg rounded-lg p-3">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Social Sentiment</span>
-                    <Badge 
-                      variant="secondary" 
+                    <span className="text-sm font-medium">
+                      Social Sentiment
+                    </span>
+                    <Badge
+                      variant="secondary"
                       className={`text-xs ${getSentimentColor(analysisResult.socialSentiment)}`}
                     >
                       {analysisResult.socialSentiment}%
                     </Badge>
                   </div>
-                  <Progress value={analysisResult.socialSentiment} className="h-2" />
+                  <Progress
+                    value={analysisResult.socialSentiment}
+                    className="h-2"
+                  />
                 </div>
               </div>
 
@@ -132,7 +153,9 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
 
               {/* Supporting Evidence */}
               <div className="trading-bg rounded-lg p-3">
-                <h4 className="text-sm font-medium mb-2">Supporting Evidence</h4>
+                <h4 className="text-sm font-medium mb-2">
+                  Supporting Evidence
+                </h4>
                 <ul className="text-xs trading-muted space-y-1">
                   {analysisResult.supportingEvidence.map((evidence, index) => (
                     <li key={index} className="flex items-center">
@@ -147,7 +170,10 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Confidence Score</span>
                 <div className="flex items-center space-x-2">
-                  <Progress value={analysisResult.confidenceScore} className="w-20 h-2" />
+                  <Progress
+                    value={analysisResult.confidenceScore}
+                    className="w-20 h-2"
+                  />
                   <span className="text-sm font-mono trading-secondary">
                     {analysisResult.confidenceScore}%
                   </span>
@@ -161,10 +187,12 @@ export default function RAGAnalysis({ symbol }: RAGAnalysisProps) {
             <div className="text-center py-8">
               <Brain className="w-12 h-12 trading-muted mx-auto mb-3" />
               <p className="text-sm trading-muted">
-                Enter a query to perform contextual analysis using RAG technology
+                Enter a query to perform contextual analysis using RAG
+                technology
               </p>
               <p className="text-xs trading-muted mt-1">
-                Correlates market data with news, social media, and on-chain signals
+                Correlates market data with news, social media, and on-chain
+                signals
               </p>
             </div>
           )}

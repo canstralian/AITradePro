@@ -46,18 +46,20 @@ export default function RecentTrades({ trades }: RecentTradesProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-2 text-sm">
-          {displayTrades.map((trade) => (
-            <div 
-              key={trade.id} 
+          {displayTrades.map(trade => (
+            <div
+              key={trade.id}
               className="flex justify-between items-center py-2 border-b border-trading-border last:border-0"
             >
               <div>
                 <span className="font-medium">{trade.symbol}</span>
-                <span className={`ml-2 text-xs px-2 py-1 rounded ${
-                  trade.type === 'buy' 
-                    ? 'bg-trading-secondary/20 trading-secondary' 
-                    : 'bg-trading-accent/20 trading-accent'
-                }`}>
+                <span
+                  className={`ml-2 text-xs px-2 py-1 rounded ${
+                    trade.type === 'buy'
+                      ? 'bg-trading-secondary/20 trading-secondary'
+                      : 'bg-trading-accent/20 trading-accent'
+                  }`}
+                >
                   {trade.type.toUpperCase()}
                 </span>
               </div>
