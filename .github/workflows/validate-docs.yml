@@ -1,0 +1,23 @@
+name: Validate Docs
+
+on:
+  push:
+    paths:
+      - .github/copilot-instructions.md
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Validate Frontend/Backend Structure
+        run: |
+          # Your validation commands here
+          echo 'Validating frontend and backend structure alignment...'
+
+          # Implement your specific checks here
+          # Example: npm run test for frontend and backend
+          echo 'Validation complete.'
