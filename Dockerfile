@@ -33,7 +33,7 @@ COPY --from=builder /app/*.ts ./
 COPY --from=builder /app/*.json ./
 
 # Install tsx for runtime (TypeScript execution)
-RUN npm install --save tsx
+RUN npm install --save tsx@4.20.3
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
