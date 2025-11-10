@@ -180,7 +180,6 @@ jobs:
 
       - name: Run npm audit
         run: npm run audit
-        continue-on-error: true
 
       - name: Download Docker image
         uses: actions/download-artifact@v4
