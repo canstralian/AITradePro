@@ -6,16 +6,43 @@ import {
   boolean,
   integer,
   jsonb,
+  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
+
+// PostgreSQL ENUM types for better data integrity
+export const backtestRunStatusEnum = pgEnum('backtest_run_status', [
+  'pending',
+  'running',
+  'completed',
+  'failed',
+]);
+
+export const backtestTradeDirectionEnum = pgEnum('backtest_trade_direction', [
+  'long',
+  'short',
+]);
+
+export const backtestTradeStatusEnum = pgEnum('backtest_trade_status', [
+  'open',
+  'closed',
+]);
+
+export const tradingStrategyTypeEnum = pgEnum('trading_strategy_type', [
+  'trend',
+  'mean_reversion',
+  'momentum',
+  'arbitrage',
+  'custom',
+]);
 
 // Strategy definitions table
 export const strategies = pgTable('strategies', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description').notNull(),
-  type: text('type').notNull(), // 'momentum', 'mean_reversion', 'trend_following', etc.
+  type: tradingStrategyTypeEnum('type').notNull(),
   parameters: jsonb('parameters').notNull(), // Strategy-specific parameters
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -41,7 +68,7 @@ export const backtestRuns = pgTable('backtest_runs', {
   totalTrades: integer('total_trades'),
   winningTrades: integer('winning_trades'),
   losingTrades: integer('losing_trades'),
-  status: text('status').notNull().default('pending'), // 'pending', 'running', 'completed', 'failed'
+  status: backtestRunStatusEnum('status').notNull().default('pending'),
   errorMessage: text('error_message'),
   metadata: jsonb('metadata'), // Additional run-specific data
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -56,15 +83,20 @@ export const backtestTrades = pgTable('backtest_trades', {
     .references(() => backtestRuns.id),
   assetSymbol: text('asset_symbol').notNull(),
   type: text('type').notNull(), // 'buy', 'sell'
+  direction: backtestTradeDirectionEnum('direction').notNull(), // 'long', 'short'
   orderType: text('order_type').notNull(), // 'market', 'limit'
   quantity: decimal('quantity', { precision: 20, scale: 8 }).notNull(),
   price: decimal('price', { precision: 15, scale: 8 }).notNull(),
+  exitPrice: decimal('exit_price', { precision: 15, scale: 8 }), // Exit price for closed positions
   commission: decimal('commission', { precision: 15, scale: 8 }).notNull().default('0'),
   slippage: decimal('slippage', { precision: 15, scale: 8 }).notNull().default('0'),
   total: decimal('total', { precision: 20, scale: 2 }).notNull(),
   pnl: decimal('pnl', { precision: 20, scale: 2 }),
   portfolioValue: decimal('portfolio_value', { precision: 20, scale: 2 }).notNull(),
   signal: text('signal'), // Signal that triggered the trade
+  status: backtestTradeStatusEnum('status').notNull().default('open'), // 'open', 'closed'
+  openedAt: timestamp('opened_at').notNull(), // When position was opened
+  closedAt: timestamp('closed_at'), // When position was closed
   timestamp: timestamp('timestamp').notNull(),
 });
 
@@ -110,23 +142,28 @@ export const paperTrades = pgTable('paper_trades', {
   price: decimal('price', { precision: 15, scale: 8 }).notNull(),
   commission: decimal('commission', { precision: 15, scale: 8 }).notNull().default('0'),
   total: decimal('total', { precision: 20, scale: 2 }).notNull(),
-  status: text('status').notNull().default('pending'), // 'pending', 'filled', 'cancelled'
+  status: text('status').notNull().default('pending'), // 'pending', 'filled', 'cancelled' - keeping as text for paper trading flexibility
   portfolioValue: decimal('portfolio_value', { precision: 20, scale: 2 }).notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
 });
 
-// Zod schemas for validation
+// Zod schemas for validation with explicit ENUM validation
 export const insertStrategySchema = createInsertSchema(strategies, {
   parameters: z.record(z.any()),
+  type: z.enum(['trend', 'mean_reversion', 'momentum', 'arbitrage', 'custom']),
 });
 export const selectStrategySchema = createSelectSchema(strategies);
 
 export const insertBacktestRunSchema = createInsertSchema(backtestRuns, {
   metadata: z.record(z.any()).optional(),
+  status: z.enum(['pending', 'running', 'completed', 'failed']).default('pending'),
 });
 export const selectBacktestRunSchema = createSelectSchema(backtestRuns);
 
-export const insertBacktestTradeSchema = createInsertSchema(backtestTrades);
+export const insertBacktestTradeSchema = createInsertSchema(backtestTrades, {
+  direction: z.enum(['long', 'short']),
+  status: z.enum(['open', 'closed']).default('open'),
+});
 export const selectBacktestTradeSchema = createSelectSchema(backtestTrades);
 
 export const insertBacktestPerformanceSchema = createInsertSchema(backtestPerformance);

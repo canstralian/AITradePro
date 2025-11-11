@@ -259,18 +259,27 @@ export class BacktestEngine {
     const db = getDatabase();
     const portfolio = this.broker.getPortfolio();
 
+    // Determine if this is opening or closing a position
+    const position = this.broker.getPosition(this.config.symbol);
+    const isClosing = position && order.side === 'sell';
+    
     const trade: InsertBacktestTrade = {
       id: nanoid(),
       backtestRunId: this.runId,
       assetSymbol: this.config.symbol,
       type: order.side,
+      direction: order.side === 'buy' ? 'long' : 'short', // Determine position direction
       orderType: order.type,
       quantity: order.quantity.toFixed(8),
       price: (order.filledPrice || 0).toFixed(8),
+      exitPrice: isClosing ? (order.filledPrice || 0).toFixed(8) : undefined,
       commission: (order.commission || 0).toFixed(8),
       slippage: (order.slippage || 0).toFixed(8),
       total: ((order.filledPrice || 0) * order.quantity).toFixed(2),
       portfolioValue: portfolio.totalValue.toFixed(2),
+      status: isClosing ? 'closed' : 'open',
+      openedAt: order.timestamp,
+      closedAt: isClosing ? order.timestamp : undefined,
       timestamp: order.timestamp,
     };
 
