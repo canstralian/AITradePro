@@ -122,13 +122,36 @@ npm run test:ui
 
 ## 🚀 CI/CD Pipeline
 
-Automated GitHub Actions workflow includes:
+Production-grade GitHub Actions workflow (`production-ci.yml`) includes:
 
-- ✅ **Code Quality**: ESLint + Prettier checks
-- ✅ **Type Safety**: TypeScript compilation
-- ✅ **Testing**: Unit tests with coverage reporting
-- ✅ **Security**: Dependency vulnerability scanning
-- ✅ **Build Verification**: Production build testing
+### Code Quality & Safety
+- ✅ **ESLint**: Code style and quality checks
+- ✅ **TypeScript**: Type safety validation
+- ✅ **Prettier**: Code formatting verification
+
+### Multi-Environment Testing
+- ✅ **SQLite Testing**: Development environment validation (Node 18.x, 20.x, LTS)
+- ✅ **PostgreSQL Testing**: Production environment validation (PostgreSQL 14, 15, 16)
+- ✅ **Database Migrations**: Automatic schema validation with Drizzle ORM
+- ✅ **Coverage Reporting**: Test coverage tracked via Codecov
+
+### Security Scanning
+- ✅ **npm audit**: Dependency vulnerability detection
+- ✅ **audit-ci**: Automated security policy enforcement
+- ✅ **Trivy**: Docker image vulnerability scanning (CRITICAL/HIGH severity)
+- ✅ **Hadolint**: Dockerfile best practices linting
+
+### Docker & Deployment
+- ✅ **Multi-stage Build**: Optimized production Docker images
+- ✅ **Build Verification**: Production build artifact validation
+- ✅ **Health Checks**: Container health monitoring
+
+### CI Pipeline Features
+- Matrix testing across Node.js versions (18.x, 20.x, LTS)
+- Matrix testing across PostgreSQL versions (14, 15, 16)
+- Automated database provisioning with health checks
+- Fail-fast error handling with detailed reporting
+- SARIF security reports uploaded to GitHub Security
 
 ## 📊 Architecture
 

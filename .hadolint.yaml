@@ -1,0 +1,10 @@
+---
+# Hadolint configuration for AITradePro Dockerfile
+# https://github.com/hadolint/hadolint
+
+ignored:
+  # DL3018: Pin versions in apk add (can be too strict for alpine)
+  # We use alpine for minimal size, version pinning can cause build failures
+  - DL3018
+
+failure-threshold: warning
