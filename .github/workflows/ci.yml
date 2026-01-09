@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -17,6 +17,26 @@ env:
   DATABASE_URL: postgresql://testuser:testpass@localhost:5432/aitradepro_test
 
 jobs:
+  lint_typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Lint YAML files
+        run: yamllint .
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+      - name: Type check
+        run: npm run check
+
   tests:
     name: Unit Tests (Node matrix)
     needs: lint_typecheck

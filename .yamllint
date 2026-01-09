@@ -1,0 +1,40 @@
+---
+# yamllint configuration for AITradePro
+# This ensures YAML files follow consistent formatting and best practices
+
+extends: default
+
+rules:
+  # Line length can be longer for complex GitHub Actions workflows
+  line-length:
+    max: 120
+    level: warning
+  
+  # Allow multiple spaces after colons for alignment
+  colons:
+    max-spaces-after: 1
+  
+  # Comments should have a space after #
+  comments:
+    min-spaces-from-content: 2
+  
+  # Allow truthy values (yes, no, on, off) in addition to true/false
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+  
+  # Indentation should be consistent (2 spaces)
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  
+  # Document start (---) is optional
+  document-start:
+    present: false
+
+# Ignore patterns
+ignore: |
+  node_modules/
+  dist/
+  build/
+  coverage/
+  .github/copilot-instructions.md
