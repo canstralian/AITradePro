@@ -124,11 +124,15 @@ npm run test:ui
 
 Automated GitHub Actions workflow includes:
 
+- ✅ **YAML Validation**: Workflow configuration linting
 - ✅ **Code Quality**: ESLint + Prettier checks
 - ✅ **Type Safety**: TypeScript compilation
 - ✅ **Testing**: Unit tests with coverage reporting
-- ✅ **Security**: Dependency vulnerability scanning
+- ✅ **Security**: Dependency vulnerability scanning with npm audit
 - ✅ **Build Verification**: Production build testing
+- ✅ **Integration Testing**: SQLite and PostgreSQL testing
+
+For detailed information about our CI/CD workflows, YAML configuration guidelines, and troubleshooting, see [CI/CD Workflows Documentation](docs/CI_CD_WORKFLOWS.md).
 
 ## 📊 Architecture
 
@@ -184,6 +188,7 @@ We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING
 - [Security Policy](SECURITY.md) - Security practices and vulnerability reporting
 - [Testing Guide](TESTING.md) - Comprehensive testing documentation
 - [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
+- [CI/CD Workflows](docs/CI_CD_WORKFLOWS.md) - CI/CD pipeline and YAML configuration guide
 
 ## 📄 License
 

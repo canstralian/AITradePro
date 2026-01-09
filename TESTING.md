@@ -114,11 +114,15 @@ describe('MyService', () => {
 
 Our CI pipeline runs on every push and PR:
 
-1. **Lint Check**: ESLint validation
-2. **Type Check**: TypeScript compilation
-3. **Unit Tests**: Full test suite execution
-4. **Coverage Report**: Coverage analysis
-5. **Security Audit**: Dependency vulnerability scan
+1. **YAML Lint**: Workflow configuration validation
+2. **Lint Check**: ESLint code quality validation
+3. **Type Check**: TypeScript compilation and type safety
+4. **Unit Tests**: Full test suite execution on Node.js matrix
+5. **Integration Tests**: SQLite and PostgreSQL database testing
+6. **Coverage Report**: Multi-source coverage analysis and upload
+7. **Security Audit**: npm dependency vulnerability scanning
+
+For detailed information about CI/CD workflows, troubleshooting, and YAML configuration guidelines, see [CI/CD Workflows Documentation](docs/CI_CD_WORKFLOWS.md).
 
 ### Pre-commit Hooks
 
