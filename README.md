@@ -41,8 +41,10 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 - Vitest for unit testing
 - Testing Library for React components
 - ESLint + Prettier for code quality
+- yamllint for YAML file validation
 - Husky + lint-staged for pre-commit hooks
 - GitHub Actions CI/CD pipeline
+- Security scanning with audit-ci and CodeQL
 
 ## 🏃‍♂️ Getting Started
 
@@ -70,8 +72,9 @@ A sophisticated AI-Enhanced trading analysis platform built with modern full-sta
 3. **Setup environment variables**
 
    ```bash
-   # Required: PostgreSQL connection string
-   DATABASE_URL=postgresql://username:password@localhost:5432/trading_db
+   cp .env.example .env
+   # Edit .env with your configuration
+   # See .env.example for security best practices
    ```
 
 4. **Setup database**
@@ -93,9 +96,13 @@ The application will be available at `http://localhost:5000`
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once (for CI)
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run lint` - Run ESLint
+- `npm run lint:yaml` - Validate YAML files
 - `npm run format` - Format code with Prettier
+- `npm run check` - TypeScript type checking
+- `npm run audit` - Security audit of dependencies
 - `npm run db:push` - Push database schema changes
 
 ## 🧪 Testing
@@ -124,11 +131,14 @@ npm run test:ui
 
 Automated GitHub Actions workflow includes:
 
+- ✅ **YAML Validation**: yamllint checks for workflow files
 - ✅ **Code Quality**: ESLint + Prettier checks
 - ✅ **Type Safety**: TypeScript compilation
-- ✅ **Testing**: Unit tests with coverage reporting
-- ✅ **Security**: Dependency vulnerability scanning
+- ✅ **Testing**: Unit and integration tests with coverage reporting
+- ✅ **Security**: Dependency vulnerability scanning with audit-ci
 - ✅ **Build Verification**: Production build testing
+
+See [docs/workflow-maintenance-guide.md](docs/workflow-maintenance-guide.md) for detailed workflow documentation.
 
 ## 📊 Architecture
 
@@ -148,18 +158,38 @@ Automated GitHub Actions workflow includes:
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Development workflow and branch naming
+- Code standards and best practices
+- YAML configuration and validation
+- Security requirements and secret handling
+- Testing requirements
+- Pull request process
+
+### Quick Start for Contributors
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes following our code standards
+4. Run linters and tests:
+   ```bash
+   npm run lint
+   npm run lint:yaml
+   npm run check
+   npm run test:run
+   ```
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
-### Code Style
+### Documentation
 
-- Use TypeScript for all new code
-- Follow ESLint configuration
-- Write tests for new features
-- Update documentation as needed
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Comprehensive contributor guide
+- [SECURITY.md](SECURITY.md) - Security policies and best practices
+- [TESTING.md](TESTING.md) - Testing guidelines
+- [docs/copilot-codex-configuration-guide.md](docs/copilot-codex-configuration-guide.md) - Copilot/Codex configuration
+- [docs/workflow-maintenance-guide.md](docs/workflow-maintenance-guide.md) - GitHub Actions workflow guide
 
 ## 📄 License
 

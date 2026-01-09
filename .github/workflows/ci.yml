@@ -28,10 +28,10 @@ jobs:
           cache: 'npm'
       - name: Install yamllint
         run: pip install yamllint
-      - name: Lint YAML files
-        run: yamllint .
       - name: Install dependencies
         run: npm ci
+      - name: Lint YAML files
+        run: npm run lint:yaml
       - name: Run ESLint
         run: npm run lint
       - name: Type check
