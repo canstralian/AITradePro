@@ -127,9 +127,19 @@ jobs:
       - run: npx audit-ci --moderate --report-type summary
 
   codeql:
-    uses: github/codeql-action/analyze@v3
-    with:
-      category: "codeql"  # requires separate init job or reusable workflow
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 ```
 
 ## Contributor Guidelines
