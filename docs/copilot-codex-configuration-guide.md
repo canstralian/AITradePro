@@ -15,7 +15,7 @@ Use the following expectations as defaults for any Copilot/Codex-driven change o
 - **Version Control**: Prefer small, reviewable commits. Reference issue IDs. Keep branches up to date with main and avoid force-pushes after review unless necessary.
 
 ## Custom Instruction Behavior
-Define explicit boundaries for AI assistance so Copilot/Codex adhere to project standards.
+Define explicit boundaries for AI assistance so Copilot/Codex adheres to project standards.
 
 ### Behavior Rules (examples)
 - Respond with concise, implementation-ready suggestions; no speculative APIs.

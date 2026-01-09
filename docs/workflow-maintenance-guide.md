@@ -146,11 +146,11 @@ This project uses **Vitest**, not Jest. Important distinctions:
 
 ### Vitest vs Jest Commands
 
-| Purpose | Jest | Vitest (Use This) |
-|---------|------|-------------------|
-| Run once | `--runInBand` | `--single-thread` or just `vitest run` |
-| Coverage | `--coverage` | `--coverage` ✅ |
-| Watch mode | `--watch` | No flag needed ✅ |
+| Purpose          | Jest             | Vitest (Use This)    |
+|------------------|------------------|----------------------|
+| Run once         | `--runInBand`    | `--single-thread` or just `vitest run` |
+| Coverage         | `--coverage`     | `--coverage` ✅      |
+| Watch mode       | `--watch`        | No flag needed ✅    |
 
 ### Example Workflow Steps
 
