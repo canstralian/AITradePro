@@ -124,7 +124,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx audit-ci --moderate --report-type summary
+      - run: npm run audit
 
   codeql:
     runs-on: ubuntu-latest
