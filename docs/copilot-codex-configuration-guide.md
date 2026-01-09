@@ -73,8 +73,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm run typecheck --if-present
-      - run: npm test -- --runInBand
+      - run: npm run check --if-present
+      - run: npm run test:run
 ```
 
 ## Semantic Release & Version Tagging
