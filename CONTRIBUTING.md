@@ -242,14 +242,14 @@ describe('MyService', () => {
 Example `.env` structure:
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+DATABASE_URL=postgresql://REPLACE_WITH_YOUR_USERNAME:REPLACE_WITH_YOUR_PASSWORD@localhost:5432/dbname
 
-# Security Keys (NEVER commit actual values!)
-JWT_SECRET=your-secure-secret-minimum-32-characters
-SESSION_SECRET=your-session-secret-minimum-32-characters
+# Security Keys (NEVER commit actual values! Use strong random strings)
+JWT_SECRET=REPLACE_WITH_RANDOM_32_PLUS_CHARACTER_STRING
+SESSION_SECRET=REPLACE_WITH_ANOTHER_RANDOM_32_PLUS_CHARACTER_STRING
 
 # API Keys
-MARKET_DATA_API_KEY=your-api-key-here
+MARKET_DATA_API_KEY=REPLACE_WITH_YOUR_API_KEY
 ```
 
 #### Security Best Practices

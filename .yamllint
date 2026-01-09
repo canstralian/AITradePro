@@ -44,9 +44,9 @@ rules:
     min-spaces-inside: 0
     max-spaces-inside: 1
 
-  # Truthy values - allow true/false and yes/no
+  # Truthy values - enforce strict true/false for clarity
   truthy:
-    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    allowed-values: ['true', 'false']
     check-keys: false
 
   # Key duplicates - error on duplicate keys

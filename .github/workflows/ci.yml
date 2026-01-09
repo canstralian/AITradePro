@@ -34,7 +34,8 @@ jobs:
       - name: TypeScript Check
         run: npm run check
       - name: Security Audit
-        run: npm audit --audit-level=moderate || true
+        run: npm audit --audit-level=moderate
+        continue-on-error: true  # Allow merge but flag vulnerabilities
 
   tests:
     name: Unit Tests (Node matrix)
