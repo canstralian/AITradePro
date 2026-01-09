@@ -149,7 +149,7 @@ jobs:
 - Validation process: run lint, type-check, unit/integration tests; verify migrations; confirm dashboards/alerts if telemetry changes.
 
 ## Troubleshooting & Optimization Tips
-- **Flaky tests**: rerun with isolated seed or `--runInBand`; inspect async cleanup and timeouts.
+- **Flaky tests**: rerun with isolated seed or `--single-thread`; inspect async cleanup and timeouts.
 - **Lint noise**: prefer targeted suppressions with comments and tracking issues; do not disable rules globally.
 - **Performance regressions**: profile hot paths; cache pure computations; avoid blocking the event loop; prefer streaming for large payloads.
 - **CI failures**: verify Node version, lockfile freshness, and cache keys. Reinstall dependencies on checksum changes.
