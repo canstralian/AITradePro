@@ -17,6 +17,25 @@ env:
   DATABASE_URL: postgresql://testuser:testpass@localhost:5432/aitradepro_test
 
 jobs:
+  lint_typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS }}
+          cache: 'npm'
+      - run: npm ci
+      - name: YAML Lint
+        run: npm run lint:yaml
+      - name: ESLint
+        run: npm run lint
+      - name: TypeScript Check
+        run: npm run check
+      - name: Security Audit
+        run: npm audit --audit-level=moderate || true
+
   tests:
     name: Unit Tests (Node matrix)
     needs: lint_typecheck

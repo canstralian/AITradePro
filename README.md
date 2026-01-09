@@ -148,18 +148,42 @@ Automated GitHub Actions workflow includes:
 
 ## 🤝 Contributing
 
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on:
+
+- Development workflow and branching strategy
+- Coding standards and best practices
+- Testing requirements
+- Security practices and dependency management
+- YAML configuration management
+- CI/CD pipeline usage
+- Pull request process
+
+### Quick Start for Contributors
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes following our [Contributing Guidelines](CONTRIBUTING.md)
+4. Ensure all tests pass (`npm run test:run`)
+5. Run security audit (`npm run audit`)
+6. Commit your changes using conventional commits
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
 ### Code Style
 
 - Use TypeScript for all new code
-- Follow ESLint configuration
+- Follow ESLint configuration (`npm run lint`)
+- Format with Prettier (`npm run format`)
 - Write tests for new features
 - Update documentation as needed
+- Follow security best practices in [SECURITY.md](SECURITY.md)
+
+## 📚 Documentation
+
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to the project
+- [Security Policy](SECURITY.md) - Security practices and vulnerability reporting
+- [Testing Guide](TESTING.md) - Comprehensive testing documentation
+- [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
 
 ## 📄 License
 
