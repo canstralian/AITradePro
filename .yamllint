@@ -1,0 +1,73 @@
+---
+# YAML Linting Configuration
+# This file defines rules for YAML syntax validation across the project
+
+extends: default
+
+rules:
+  # Line length - allow longer lines for readability in CI configs
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation - enforce 2 spaces consistently
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Comments - require spacing and allow standalone comments
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: true
+
+  # Trailing spaces - disallow
+  trailing-spaces: enable
+
+  # Empty lines - allow up to 2 empty lines
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+
+  # Document start/end markers - optional
+  document-start: disable
+  document-end: disable
+
+  # Brackets - enforce consistent spacing
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+
+  # Braces - enforce consistent spacing
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Truthy values - enforce strict true/false for clarity
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false
+
+  # Key duplicates - error on duplicate keys
+  key-duplicates: enable
+
+  # New lines - require newline at end of file
+  new-line-at-end-of-file: enable
+
+  # Hyphens - enforce consistent spacing
+  hyphens:
+    max-spaces-after: 1
+
+  # Empty values - allow empty values
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+# Ignore patterns
+ignore: |
+  node_modules/
+  .git/
+  coverage/
+  dist/
+  build/
