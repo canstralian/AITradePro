@@ -3,11 +3,31 @@
 
 echo "Running pre-commit checks..."
 
+# Check for potential secrets in staged files
+echo "Checking for potential secrets..."
+git diff --cached --name-only | while read file; do
+  if [ -f "$file" ]; then
+    # Check for common secret patterns
+    if git diff --cached "$file" | grep -iE "(password|secret|api[_-]?key|token|auth|private[_-]?key|bearer)\s*[:=]\s*['\"][^'\"]{8,}['\"]"; then
+      echo "❌ Error: Potential secret detected in $file"
+      echo "   Please remove secrets before committing."
+      exit 1
+    fi
+  fi
+done
+
+# Prevent committing .env files
+if git diff --cached --name-only | grep -E "^\.env$|^\.env\.local$|^\.env\.production$"; then
+  echo "❌ Error: .env file detected in commit!"
+  echo "   Never commit .env files. Use .env.example for templates."
+  exit 1
+fi
+
 # Run linting
 echo "Running ESLint..."
 npm run lint
 
-# Run type checking  
+# Run type checking
 echo "Running TypeScript check..."
 npm run check
 
