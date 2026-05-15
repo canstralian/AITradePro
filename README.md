@@ -93,9 +93,13 @@ The application will be available at `http://localhost:5000`
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once (for CI)
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run lint` - Run ESLint
+- `npm run lint:yaml` - Validate YAML files
 - `npm run format` - Format code with Prettier
+- `npm run check` - TypeScript type checking
+- `npm run audit` - Security audit of dependencies
 - `npm run db:push` - Push database schema changes
 
 ## 🧪 Testing
