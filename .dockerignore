@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Development files
+*.md
+.git
+.github
+.gitignore
+.env
+.env.example
+.envrc
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+coverage
+.nyc_output
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+vitest.config.ts
+
+# Build artifacts
+dist
+*.db
+*.db-journal
+
+# Documentation
+docs
+README.md
+SECURITY.md
+TESTING.md
+DEPLOYMENT.md
+
+# CI/CD
+.github/workflows
+.husky
+
+# Replit specific
+.replit
+replit.md
+attached_assets
