@@ -6,8 +6,8 @@ body:
     attributes:
       value: |
         ## 👩‍💻 Copilot Coding Agent Issue Template
-        Use this template to create tasks for GitHub Copilot as a coding agent.  
-        Copilot is best at **scoped, pattern-based tasks**.  
+        Use this template to create tasks for GitHub Copilot as a coding agent.
+        Copilot is best at **scoped, pattern-based tasks**.
         Avoid giving it **complex, sensitive, or ambiguous tasks**.
 
   - type: checkboxes

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -34,7 +34,7 @@ jobs:
       - name: TypeScript Check
         run: npm run check
       - name: Security Audit
-        run: npm audit --audit-level=moderate
+        run: npm run audit
         continue-on-error: true  # Allow merge but flag vulnerabilities
 
   tests:

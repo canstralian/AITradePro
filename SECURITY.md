@@ -42,6 +42,14 @@
 - Required environment variables validation
 - No hardcoded secrets in codebase
 - Separate development/production configurations
+- **Environment File Management**:
+  - Never commit `.env` files to version control (enforced by `.gitignore`)
+  - Use `.env.example` as a template with placeholder values only
+  - Generate strong, cryptographically random secrets for production
+  - Rotate secrets regularly and after any suspected compromise
+  - Use environment-specific files (`.env.development`, `.env.production`) when needed
+  - Ensure log sanitization to prevent secrets from appearing in logs
+  - Use secret management services (AWS Secrets Manager, HashiCorp Vault) in production
 
 ### Logging & Monitoring
 
